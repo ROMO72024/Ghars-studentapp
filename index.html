@@ -209,7 +209,8 @@
 
             if (navigator.onLine) {
                 try {
-                    let res = await fetch(GAS_URL, { cache: "no-store", redirect: "follow" });
+                    let freshUrl = GAS_URL + (GAS_URL.includes("?") ? "&" : "?") + "t=" + new Date().getTime();
+                    let res = await fetch(freshUrl);
                     let data = await res.json();
                     let teacherFound = null;
                     
