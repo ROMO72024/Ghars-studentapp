@@ -1,4 +1,4 @@
-const CACHE_NAME = "ghars-app-v6";
+const CACHE_NAME = "ghars-app-final-v7";
 const ASSETS = [
     "./",
     "./index.html",
@@ -21,18 +21,12 @@ self.addEventListener("activate", (e) => {
 });
 
 self.addEventListener("fetch", (e) => {
-    // الحل الجذري: إذا كانت العملية "إرسال بيانات" (POST)، اتركها تمر للإنترنت مباشرة ولا تتدخل أبداً
-    if (e.request.method !== "GET") {
+    // الأهم: منع ملف الأوفلاين من التدخل نهائياً في عمليات جوجل!
+    if (e.request.url.includes("script.google.com") || e.request.url.includes("googleusercontent.com") || e.request.method !== "GET") {
         return; 
     }
 
-    // للطلبات الأخرى المتعلقة بالداتابيز، دعه يمر
-    if (e.request.url.includes("script.google.com") || e.request.url.includes("googleusercontent.com")) {
-        e.respondWith(fetch(e.request));
-        return;
-    }
-
-    // لباقي ملفات التصميم، استخدم الإنترنت وإن فشل استخدم الذاكرة
+    // لباقي الملفات (الصور والتصميم)
     e.respondWith(
         fetch(e.request).catch(() => {
             return caches.match(e.request);
