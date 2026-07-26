@@ -162,11 +162,12 @@
         document.getElementById('dateDisplay').innerText = formattedDate;
         document.getElementById('dayDisplay').innerText = currentDayName;
 
-        // تسجيل الـ Service Worker ليعمل التطبيق كبرنامج (PWA)
+        // --- خدعة التنظيف الذاتي لمنع تعليق الكاش في هواتف المعلمات ---
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
-                navigator.serviceWorker.register('./sw.js').then(reg => {
-                    console.log('Service Worker Registered!', reg);
+                // إضافة رقم عشوائي للرابط يجبر الهاتف على تحميل الكود الجديد وتجاهل القديم
+                navigator.serviceWorker.register('./sw.js?v=' + new Date().getTime()).then(reg => {
+                    reg.update(); // فرض التحديث
                 });
             });
         }
@@ -190,7 +191,6 @@
         window.addEventListener('online', syncOfflineData);
         window.addEventListener('offline', () => showToast('انقطع الاتصال، التطبيق يعمل في وضع الأوفلاين الآن', 'warning'));
 
-        // دالة جديدة: تحديث الذاكرة المحلية عند إضافة أو حذف طالب
         function updateOfflineStudentsCache() {
             let offlineData = localStorage.getItem('ghars_offline_auth');
             if (offlineData) {
@@ -209,8 +209,8 @@
 
             if (navigator.onLine) {
                 try {
-                    let freshUrl = GAS_URL + (GAS_URL.includes("?") ? "&" : "?") + "t=" + new Date().getTime();
-                    let res = await fetch(freshUrl);
+                    // كود الاتصال النظيف الخالي من التعقيدات
+                    let res = await fetch(GAS_URL);
                     let data = await res.json();
                     let teacherFound = null;
                     
@@ -235,7 +235,10 @@
                     } else {
                         showToast('كود المعلمة غير صحيح', 'error');
                     }
-                } catch (err) { checkOfflineLogin(idInput); } 
+                } catch (err) { 
+                    // إذا فشل الاتصال لسبب ما، جرب الأوفلاين
+                    checkOfflineLogin(idInput); 
+                } 
                 finally { btn.innerHTML = originalHTML; }
             } else { checkOfflineLogin(idInput); btn.innerHTML = originalHTML; }
         }
@@ -249,7 +252,9 @@
                     showToast('دخول أوفلاين', 'warning');
                     openDashboard();
                 } else { showToast('الكود غير صحيح', 'error'); }
-            } else { showToast('لا يوجد إنترنت للتحقق', 'error'); }
+            } else { 
+                showToast('فشل الاتصال بالسيرفر أو لا يوجد إنترنت', 'error'); 
+            }
         }
 
         function openDashboard() {
@@ -261,7 +266,6 @@
             syncOfflineData(); 
         }
 
-        // قراءة الحضور المعلق لعدم تصفير الواجهة عند الدخول مرة أخرى
         function renderStudents() {
             const container = document.getElementById('studentsListContainer');
             container.innerHTML = '';
