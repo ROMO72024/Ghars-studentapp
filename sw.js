@@ -1,4 +1,4 @@
-const CACHE_NAME = "ghars-app-v1";
+const CACHE_NAME = "ghars-app-v2";
 const urlsToCache = [
   "./index.html",
   "./logo.jpg",
