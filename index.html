@@ -1,11 +1,12 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-    <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#0f3d2e">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>تطبيق الحضور والغياب | غرس</title>
+    
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#0f3d2e">
     
     <!-- أيقونة الموقع -->
     <link rel="icon" href="logo.jpg" type="image/jpeg">
@@ -146,7 +147,7 @@
     <!-- Script -->
     <script>
         // ======= الرابط الخاص بك يوضع هنا =======
-        const GAS_URL = "https://script.google.com/macros/s/AKfycbzTg69JRVgMlXfbh80dooyC3_zPtcAYeOh95N3v7I19t3HcukrjKgDFHouMON6NJjqNFA/exec";
+        const GAS_URL = "أدخل_رابط_الـ_Apps_Script_هنا";
 
         let currentTeacher = null, currentClass = null, studentsData = [];
 
@@ -160,6 +161,15 @@
 
         document.getElementById('dateDisplay').innerText = formattedDate;
         document.getElementById('dayDisplay').innerText = currentDayName;
+
+        // تسجيل الـ Service Worker ليعمل التطبيق كبرنامج (PWA)
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js').then(reg => {
+                    console.log('Service Worker Registered!', reg);
+                });
+            });
+        }
 
         function showToast(message, type = 'success', duration = 4000) {
             const toast = document.getElementById('toast'), icon = document.getElementById('toastIcon'), msg = document.getElementById('toastMessage');
@@ -179,6 +189,16 @@
 
         window.addEventListener('online', syncOfflineData);
         window.addEventListener('offline', () => showToast('انقطع الاتصال، التطبيق يعمل في وضع الأوفلاين الآن', 'warning'));
+
+        // دالة جديدة: تحديث الذاكرة المحلية عند إضافة أو حذف طالب
+        function updateOfflineStudentsCache() {
+            let offlineData = localStorage.getItem('ghars_offline_auth');
+            if (offlineData) {
+                let parsed = JSON.parse(offlineData);
+                parsed.students = studentsData;
+                localStorage.setItem('ghars_offline_auth', JSON.stringify(parsed));
+            }
+        }
 
         async function handleLogin() {
             const idInput = document.getElementById('teacherIdInput').value.trim();
@@ -207,7 +227,6 @@
                         for (let i = 1; i < data.students.length; i++) {
                             if (String(data.students[i][0]).trim() === String(currentClass).trim()) studentsData.push(data.students[i][1]);
                         }
-                        // تمت إزالة الكود التجريبي الذي يضع الطلاب الوهميين من هنا نهائياً
 
                         localStorage.setItem('ghars_offline_auth', JSON.stringify({ id: idInput, teacher: currentTeacher, className: currentClass, students: studentsData }));
                         openDashboard();
@@ -241,6 +260,7 @@
             syncOfflineData(); 
         }
 
+        // قراءة الحضور المعلق لعدم تصفير الواجهة عند الدخول مرة أخرى
         function renderStudents() {
             const container = document.getElementById('studentsListContainer');
             container.innerHTML = '';
@@ -249,7 +269,19 @@
                 return;
             }
 
+            let pending = JSON.parse(localStorage.getItem('ghars_pending_batches') || '[]');
+            let pendingBatch = pending.find(b => b.records && b.records.length > 0 && b.records[0].className === currentClass && b.records[0].date === formattedDate);
+
             studentsData.forEach((student, index) => {
+                let status = 'حاضر'; 
+                if (pendingBatch) {
+                    let rec = pendingBatch.records.find(r => r.studentName === student);
+                    if (rec) status = rec.status;
+                }
+
+                const isPresent = status === 'حاضر' ? 'checked' : '';
+                const isAbsent = status === 'غائب' ? 'checked' : '';
+
                 const item = document.createElement('div');
                 item.className = "flex items-center justify-between bg-white/70 p-3 rounded-2xl border border-white/80 shadow-sm";
                 item.innerHTML = `
@@ -257,11 +289,11 @@
                     <div class="flex items-center gap-3">
                         <div class="flex gap-1 bg-slate-50 p-1 rounded-xl">
                             <label class="relative cursor-pointer">
-                                <input type="radio" name="attendance_${index}" value="حاضر" checked class="peer sr-only">
+                                <input type="radio" name="attendance_${index}" value="حاضر" ${isPresent} class="peer sr-only">
                                 <span class="block px-3 py-1.5 rounded-lg text-xs font-bold text-slate-500 border border-transparent transition-all">حاضر</span>
                             </label>
                             <label class="relative cursor-pointer">
-                                <input type="radio" name="attendance_${index}" value="غائب" class="peer sr-only absent">
+                                <input type="radio" name="attendance_${index}" value="غائب" ${isAbsent} class="peer sr-only absent">
                                 <span class="block px-3 py-1.5 rounded-lg text-xs font-bold text-slate-500 border border-transparent transition-all">غائب</span>
                             </label>
                         </div>
@@ -278,7 +310,10 @@
             const input = document.getElementById('newStudentName'), studentName = input.value.trim();
             if (!studentName || studentsData.includes(studentName)) return;
 
-            studentsData.push(studentName); renderStudents(); input.value = '';
+            studentsData.push(studentName); 
+            updateOfflineStudentsCache();
+            renderStudents(); 
+            input.value = '';
             
             if (navigator.onLine) {
                 showToast('تمت إضافة الطالب', 'success');
@@ -288,7 +323,9 @@
 
         async function deleteStudent(studentName) {
             if (!confirm(`حذف ${studentName}؟`)) return;
-            studentsData = studentsData.filter(s => s !== studentName); renderStudents();
+            studentsData = studentsData.filter(s => s !== studentName); 
+            updateOfflineStudentsCache();
+            renderStudents();
             
             if (navigator.onLine) {
                 showToast('تم الحذف', 'success');
@@ -296,7 +333,6 @@
             } else { showToast('حُذف من الذاكرة', 'warning'); }
         }
 
-        // نظام الحفظ السريع (إرسال الحزمة دفعة واحدة)
         async function saveAttendance() {
             if (studentsData.length === 0) return;
 
@@ -321,16 +357,15 @@
                 });
             }
 
-            const batchData = {
-                action: 'batch_attendance',
-                records: payloadList
-            };
+            const batchData = { action: 'batch_attendance', records: payloadList };
 
             if (navigator.onLine) {
                 try {
-                    // إرسال طلب واحد فقط يحتوي على جميع الطلاب
                     await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(batchData) });
                     showToast('تم الحفظ والتحديث بلمح البصر! ⚡', 'success');
+                    let pending = JSON.parse(localStorage.getItem('ghars_pending_batches') || '[]');
+                    pending = pending.filter(b => b.records[0].className !== currentClass || b.records[0].date !== formattedDate);
+                    localStorage.setItem('ghars_pending_batches', JSON.stringify(pending));
                 } catch (err) { saveToOffline(batchData); }
             } else { saveToOffline(batchData); }
 
@@ -365,15 +400,5 @@
             document.getElementById('loginScreen').classList.remove('hidden');
         }
     </script>
-    <script>
-  if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-      navigator.serviceWorker.register('./sw.js').then(reg => {
-        console.log('Service Worker Registered!', reg);
-      });
-    });
-  }
-</script>
-    
 </body>
 </html>
