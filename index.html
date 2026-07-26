@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>تطبيق الحضور والغياب | غرس</title>
     
-    <!-- أيقونة الموقع (Favicon) -->
+    <!-- أيقونة الموقع -->
     <link rel="icon" href="logo.jpg" type="image/jpeg">
 
     <!-- Tailwind & FontAwesome -->
@@ -24,27 +24,23 @@
             overflow-x: hidden;
         }
         
-        /* تأثيرات الخلفية البلورية */
         .glass-card {
-            background: rgba(255, 255, 255, 0.75);
+            background: rgba(255, 255, 255, 0.85);
             backdrop-filter: blur(16px);
             -webkit-backdrop-filter: blur(16px);
-            border: 1px solid rgba(255, 255, 255, 0.5);
-            box-shadow: 0 20px 40px rgba(15, 61, 46, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            box-shadow: 0 15px 35px rgba(15, 61, 46, 0.08);
         }
 
-        .blob-1 { background: var(--ghars-magenta); animation: blob 7s infinite; }
-        .blob-2 { background: var(--ghars-green); animation: blob 7s infinite 2s; }
-        .blob-3 { background: #34d399; animation: blob 7s infinite 4s; }
+        .blob-1 { background: var(--ghars-magenta); animation: blob 8s infinite alternate; }
+        .blob-2 { background: var(--ghars-green); animation: blob 8s infinite alternate-reverse 2s; }
+        .blob-3 { background: #34d399; animation: blob 8s infinite alternate 4s; }
 
         @keyframes blob {
             0% { transform: translate(0px, 0px) scale(1); }
-            33% { transform: translate(30px, -50px) scale(1.1); }
-            66% { transform: translate(-20px, 20px) scale(0.9); }
-            100% { transform: translate(0px, 0px) scale(1); }
+            100% { transform: translate(20px, -30px) scale(1.1); }
         }
 
-        /* تخصيص الـ Radio Buttons */
         input[type="radio"]:checked + span {
             background-color: var(--ghars-green);
             color: white;
@@ -59,112 +55,88 @@
 </head>
 <body class="min-h-screen relative flex flex-col justify-between text-slate-800">
 
-    <!-- الخلفية البلورية المتحركة -->
     <div class="fixed inset-0 w-full h-full z-0 overflow-hidden pointer-events-none">
-        <div class="absolute top-[-10%] left-[-10%] w-96 h-96 rounded-full mix-blend-multiply filter blur-3xl opacity-30 blob-1"></div>
-        <div class="absolute top-[20%] right-[-10%] w-96 h-96 rounded-full mix-blend-multiply filter blur-3xl opacity-20 blob-2"></div>
-        <div class="absolute bottom-[-20%] left-[20%] w-96 h-96 rounded-full mix-blend-multiply filter blur-3xl opacity-30 blob-3"></div>
+        <div class="absolute top-[-10%] left-[-10%] w-96 h-96 rounded-full mix-blend-multiply filter blur-3xl opacity-20 blob-1"></div>
+        <div class="absolute top-[20%] right-[-10%] w-96 h-96 rounded-full mix-blend-multiply filter blur-3xl opacity-10 blob-2"></div>
+        <div class="absolute bottom-[-20%] left-[20%] w-96 h-96 rounded-full mix-blend-multiply filter blur-3xl opacity-20 blob-3"></div>
     </div>
 
-    <!-- نظام الإشعارات الذكي (Toast) -->
-    <div id="toast" class="fixed top-5 left-1/2 transform -translate-x-1/2 z-50 transition-all duration-500 opacity-0 -translate-y-10 flex items-center gap-3 px-6 py-3 rounded-2xl shadow-2xl font-bold text-white pointer-events-none">
+    <!-- Toast Notifications -->
+    <div id="toast" class="fixed top-5 left-1/2 transform -translate-x-1/2 z-50 transition-all duration-500 opacity-0 -translate-y-10 flex items-center gap-3 px-6 py-3 rounded-full shadow-2xl font-bold text-white pointer-events-none">
         <i id="toastIcon" class="fa-solid fa-check-circle text-xl"></i>
-        <span id="toastMessage">تمت العملية بنجاح!</span>
+        <span id="toastMessage">تمت العملية!</span>
     </div>
 
-    <!-- المحتوى الرئيسي (فوق الخلفية) -->
     <main class="relative z-10 max-w-lg mx-auto p-5 w-full flex-grow flex flex-col pt-10">
-
-        <!-- Header -->
+        
         <div class="text-center mb-8">
-            <div class="inline-block p-2 rounded-3xl glass-card mb-4 shadow-lg">
+            <div class="inline-block p-2 rounded-3xl glass-card mb-4 shadow-lg bg-white/90">
                 <img src="logo.jpg" alt="شعار غرس" class="w-20 h-20 rounded-2xl object-cover mx-auto">
             </div>
-            <h1 class="text-2xl font-extrabold text-[#0f3d2e] drop-shadow-sm">روضة ومؤسسة غرس الحديثة</h1>
-            <p class="text-sm font-semibold text-[#be185d] mt-1 bg-white/50 inline-block px-4 py-1 rounded-full">تطبيق الحضور والغياب</p>
+            <h1 class="text-2xl font-extrabold text-[#0f3d2e] drop-shadow-sm">روضة ومدرسة غرس الحديثة</h1>
+            <p class="text-sm font-semibold text-[#be185d] mt-1 bg-white/60 inline-block px-4 py-1 rounded-full">تطبيق الحضور والغياب</p>
         </div>
 
-        <!-- Login Screen -->
-        <div id="loginScreen" class="glass-card rounded-3xl p-8 mb-10 transform transition-all duration-500">
+        <!-- Login -->
+        <div id="loginScreen" class="glass-card rounded-3xl p-8 mb-10">
             <div class="text-center mb-6">
                 <h2 class="text-lg font-bold text-slate-700">مرحباً بكِ معلمتي</h2>
                 <p class="text-xs text-slate-500 mt-1">يرجى إدخال كود الدخول الخاص بكِ</p>
             </div>
-            
             <div class="space-y-5">
                 <div class="relative">
                     <i class="fa-solid fa-lock absolute right-4 top-1/2 transform -translate-y-1/2 text-slate-400"></i>
-                    <input type="password" id="teacherIdInput" placeholder="كود المعلمة..." class="w-full pl-4 pr-12 py-4 rounded-2xl border-2 border-white/50 focus:border-[#0f3d2e] focus:outline-none bg-white/60 text-center text-xl tracking-widest font-bold text-[#0f3d2e] shadow-inner transition-all">
+                    <input type="password" id="teacherIdInput" placeholder="كود المعلمة..." class="w-full pl-4 pr-12 py-4 rounded-2xl border-2 border-white/60 focus:border-[#0f3d2e] focus:outline-none bg-white/70 text-center text-xl tracking-widest font-bold text-[#0f3d2e] shadow-inner transition-all">
                 </div>
-                <button onclick="handleLogin()" class="w-full bg-gradient-to-l from-[#0f3d2e] to-[#185c46] hover:scale-[1.02] text-white font-bold py-4 rounded-2xl transition-all duration-300 shadow-xl shadow-[#0f3d2e]/30 flex items-center justify-center gap-2">
+                <button onclick="handleLogin()" class="w-full bg-gradient-to-l from-[#0f3d2e] to-[#185c46] text-white font-bold py-4 rounded-2xl transition-all shadow-xl shadow-[#0f3d2e]/20 flex items-center justify-center gap-2">
                     <i class="fa-solid fa-arrow-right-to-bracket"></i> دخول للنظام
                 </button>
             </div>
         </div>
 
-        <!-- Dashboard Screen -->
-        <div id="dashboardScreen" class="hidden space-y-5 mb-10 animate-fade-in-up">
+        <!-- Dashboard -->
+        <div id="dashboardScreen" class="hidden space-y-5 mb-10">
             
-            <!-- معلومات المعلمة والتاريخ -->
             <div class="glass-card rounded-3xl p-5 flex flex-col gap-4">
-                <div class="flex justify-between items-center border-b border-white/40 pb-4">
+                <div class="flex justify-between items-center border-b border-white/60 pb-4">
                     <div class="flex items-center gap-3">
                         <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#0f3d2e] to-[#185c46] text-white flex items-center justify-center text-xl shadow-md">
                             <i class="fa-solid fa-chalkboard-user"></i>
                         </div>
                         <div>
-                            <h3 id="teacherNameDisplay" class="font-bold text-[#0f3d2e] text-lg">اسم المعلمة</h3>
+                            <h3 id="teacherNameDisplay" class="font-bold text-[#0f3d2e] text-lg">الاسم</h3>
                             <p class="text-xs font-bold text-[#be185d]">الفصل: <span id="classNameDisplay">--</span></p>
                         </div>
                     </div>
-                    <button onclick="handleLogout()" class="w-10 h-10 bg-red-50 hover:bg-red-100 text-red-500 rounded-2xl flex items-center justify-center transition-colors shadow-sm" title="تسجيل خروج">
+                    <button onclick="handleLogout()" class="w-10 h-10 bg-red-50 text-red-500 rounded-2xl flex items-center justify-center shadow-sm">
                         <i class="fa-solid fa-power-off"></i>
                     </button>
                 </div>
-
                 <div class="flex justify-between items-center px-2">
-                    <div class="text-xs font-bold text-slate-600 flex items-center gap-2">
-                        <i class="fa-solid fa-calendar-day text-[#0f3d2e]"></i> <span id="dayDisplay">--</span>
-                    </div>
-                    <div class="text-xs font-bold text-slate-600 flex items-center gap-2">
-                        <i class="fa-solid fa-clock text-[#be185d]"></i> <span id="dateDisplay">--</span>
-                    </div>
+                    <div class="text-xs font-bold text-slate-600 flex items-center gap-2"><i class="fa-solid fa-calendar-day text-[#0f3d2e]"></i> <span id="dayDisplay">--</span></div>
+                    <div class="text-xs font-bold text-slate-600 flex items-center gap-2"><i class="fa-solid fa-clock text-[#be185d]"></i> <span id="dateDisplay">--</span></div>
                 </div>
             </div>
 
-            <!-- إضافة طالب -->
             <div class="glass-card rounded-3xl p-5">
-                <h4 class="text-sm font-bold text-[#0f3d2e] mb-3 flex items-center gap-2">
-                    <i class="fa-solid fa-user-plus text-[#be185d]"></i> تسجيل طالب جديد
-                </h4>
+                <h4 class="text-sm font-bold text-[#0f3d2e] mb-3 flex items-center gap-2"><i class="fa-solid fa-user-plus text-[#be185d]"></i> تسجيل طالب جديد</h4>
                 <div class="flex gap-2">
-                    <input type="text" id="newStudentName" placeholder="اسم الطالب الثلاثي..." class="flex-grow px-4 py-3 rounded-xl border-2 border-white/50 focus:border-[#be185d] focus:outline-none bg-white/60 text-sm font-semibold transition-all">
-                    <button onclick="addNewStudent()" class="bg-[#be185d] hover:bg-[#9d174d] text-white px-5 rounded-xl text-sm font-bold transition-all shadow-lg shadow-pink-900/20">
-                        إضافة
-                    </button>
+                    <input type="text" id="newStudentName" placeholder="اسم الطالب الثلاثي..." class="flex-grow px-4 py-3 rounded-xl border-2 border-white/60 focus:border-[#be185d] focus:outline-none bg-white/70 text-sm font-semibold">
+                    <button onclick="addNewStudent()" class="bg-[#be185d] text-white px-5 rounded-xl text-sm font-bold shadow-lg shadow-pink-900/20">إضافة</button>
                 </div>
             </div>
 
-            <!-- قائمة الحضور -->
             <div class="glass-card rounded-3xl p-5">
-                <h4 class="text-sm font-bold text-[#0f3d2e] mb-4 flex items-center gap-2">
-                    <i class="fa-solid fa-list-check text-[#be185d]"></i> كشف الحضور والغياب
-                </h4>
-
-                <div id="studentsListContainer" class="max-h-80 overflow-y-auto space-y-3 pr-2 scrollbar-hide">
-                    <!-- سيتم إضافة الطلاب هنا -->
-                </div>
-
-                <button onclick="saveAttendance()" id="saveBtn" class="w-full mt-6 bg-gradient-to-r from-[#0f3d2e] to-[#185c46] hover:scale-[1.02] text-white font-bold py-4 rounded-2xl transition-all duration-300 shadow-xl shadow-[#0f3d2e]/30 flex items-center justify-center gap-2 text-lg">
-                    <i class="fa-solid fa-cloud-arrow-up"></i> حفظ وتحديث السجل
+                <h4 class="text-sm font-bold text-[#0f3d2e] mb-4 flex items-center gap-2"><i class="fa-solid fa-list-check text-[#be185d]"></i> كشف الحضور والغياب</h4>
+                <div id="studentsListContainer" class="max-h-80 overflow-y-auto space-y-3 pr-2 scrollbar-hide"></div>
+                <button onclick="saveAttendance()" id="saveBtn" class="w-full mt-6 bg-gradient-to-r from-[#0f3d2e] to-[#185c46] text-white font-bold py-4 rounded-2xl transition-all shadow-xl shadow-[#0f3d2e]/20 flex items-center justify-center gap-2 text-lg">
+                    <i class="fa-solid fa-bolt text-yellow-400"></i> حفظ وتحديث سريع
                 </button>
             </div>
 
         </div>
-
     </main>
 
-    <!-- Footer المميز -->
     <footer class="relative z-10 text-center py-6 pb-8">
         <p class="text-xs font-bold text-slate-500">Made By <span class="text-[#be185d] text-sm">ROMO7</span> &copy; 2026</p>
     </footer>
@@ -172,11 +144,9 @@
     <!-- Script -->
     <script>
         // ======= الرابط الخاص بك يوضع هنا =======
-        const GAS_URL = "أدخل_رابط_الـ_Apps_Script_هنا";
+        const GAS_URL = "https://script.google.com/macros/s/AKfycbzTg69JRVgMlXfbh80dooyC3_zPtcAYeOh95N3v7I19t3HcukrjKgDFHouMON6NJjqNFA/exec";
 
-        let currentTeacher = null;
-        let currentClass = null;
-        let studentsData = [];
+        let currentTeacher = null, currentClass = null, studentsData = [];
 
         const now = new Date();
         const year = now.getFullYear();
@@ -189,12 +159,8 @@
         document.getElementById('dateDisplay').innerText = formattedDate;
         document.getElementById('dayDisplay').innerText = currentDayName;
 
-        // دالة عرض الإشعارات
         function showToast(message, type = 'success', duration = 4000) {
-            const toast = document.getElementById('toast');
-            const icon = document.getElementById('toastIcon');
-            const msg = document.getElementById('toastMessage');
-            
+            const toast = document.getElementById('toast'), icon = document.getElementById('toastIcon'), msg = document.getElementById('toastMessage');
             if (type === 'success') {
                 toast.className = "fixed top-5 left-1/2 transform -translate-x-1/2 z-50 transition-all duration-500 flex items-center gap-3 px-6 py-3 rounded-full shadow-2xl font-bold text-white pointer-events-none bg-gradient-to-r from-[#0f3d2e] to-[#185c46] translate-y-0 opacity-100";
                 icon.className = "fa-solid fa-check-circle text-xl text-green-400";
@@ -206,14 +172,9 @@
                 icon.className = "fa-solid fa-circle-exclamation text-xl text-white";
             }
             msg.innerText = message;
-            
-            setTimeout(() => {
-                toast.classList.remove('translate-y-0', 'opacity-100');
-                toast.classList.add('-translate-y-10', 'opacity-0');
-            }, duration);
+            setTimeout(() => { toast.classList.remove('translate-y-0', 'opacity-100'); toast.classList.add('-translate-y-10', 'opacity-0'); }, duration);
         }
 
-        // مراقبة عودة الإنترنت للمزامنة التلقائية
         window.addEventListener('online', syncOfflineData);
         window.addEventListener('offline', () => showToast('انقطع الاتصال، التطبيق يعمل في وضع الأوفلاين الآن', 'warning'));
 
@@ -221,19 +182,18 @@
             const idInput = document.getElementById('teacherIdInput').value.trim();
             if (!idInput) { showToast('الرجاء إدخال الكود أولاً', 'error'); return; }
 
-            const btn = event.currentTarget;
-            const originalHTML = btn.innerHTML;
+            const btn = event.currentTarget, originalHTML = btn.innerHTML;
             btn.innerHTML = `<i class="fa-solid fa-spinner animate-spin"></i> جاري التحقق...`;
 
             if (navigator.onLine) {
                 try {
                     let res = await fetch(GAS_URL);
                     let data = await res.json();
-                    
                     let teacherFound = null;
+                    
                     for (let i = 1; i < data.teachers.length; i++) {
                         if (String(data.teachers[i][0]).trim() === idInput || String(data.teachers[i][1]).trim() === idInput) {
-                            teacherFound = { name: data.teachers[i][1] || data.teachers[i][0], className: data.teachers[i][2] || "أول 1" };
+                            teacherFound = { name: data.teachers[i][1] || data.teachers[i][0], className: data.teachers[i][2] || "عام" };
                             break;
                         }
                     }
@@ -241,29 +201,21 @@
                     if (teacherFound) {
                         currentTeacher = teacherFound.name;
                         currentClass = teacherFound.className;
-                        
                         studentsData = [];
                         for (let i = 1; i < data.students.length; i++) {
                             if (String(data.students[i][0]).trim() === String(currentClass).trim()) studentsData.push(data.students[i][1]);
                         }
+                        // تمت إزالة الكود التجريبي الذي يضع الطلاب الوهميين من هنا نهائياً
 
-                        // حفظ البيانات في ذاكرة الهاتف للاستخدام عند انقطاع الإنترنت
                         localStorage.setItem('ghars_offline_auth', JSON.stringify({ id: idInput, teacher: currentTeacher, className: currentClass, students: studentsData }));
-
                         openDashboard();
                         showToast(`أهلاً بكِ أ. ${currentTeacher}`, 'success');
                     } else {
                         showToast('كود المعلمة غير صحيح', 'error');
                     }
-                } catch (err) {
-                    checkOfflineLogin(idInput);
-                } finally {
-                    btn.innerHTML = originalHTML;
-                }
-            } else {
-                checkOfflineLogin(idInput);
-                btn.innerHTML = originalHTML;
-            }
+                } catch (err) { checkOfflineLogin(idInput); } 
+                finally { btn.innerHTML = originalHTML; }
+            } else { checkOfflineLogin(idInput); btn.innerHTML = originalHTML; }
         }
 
         function checkOfflineLogin(idInput) {
@@ -271,17 +223,11 @@
             if (offlineData) {
                 let parsed = JSON.parse(offlineData);
                 if (parsed.id === idInput) {
-                    currentTeacher = parsed.teacher;
-                    currentClass = parsed.className;
-                    studentsData = parsed.students || [];
-                    showToast('تم تسجيل الدخول (وضع الأوفلاين)', 'warning');
+                    currentTeacher = parsed.teacher; currentClass = parsed.className; studentsData = parsed.students || [];
+                    showToast('دخول أوفلاين', 'warning');
                     openDashboard();
-                } else {
-                    showToast('الكود غير صحيح أو غير مسجل بالذاكرة', 'error');
-                }
-            } else {
-                showToast('لا يوجد اتصال بالإنترنت ولا بيانات مسجلة مسبقاً', 'error');
-            }
+                } else { showToast('الكود غير صحيح', 'error'); }
+            } else { showToast('لا يوجد إنترنت للتحقق', 'error'); }
         }
 
         function openDashboard() {
@@ -296,25 +242,28 @@
         function renderStudents() {
             const container = document.getElementById('studentsListContainer');
             container.innerHTML = '';
-            if (studentsData.length === 0) return;
+            if (studentsData.length === 0) {
+                container.innerHTML = `<p class="text-center text-slate-400 py-6 text-sm font-bold bg-white/50 rounded-2xl">لا يوجد طلاب مسجلين في هذا الفصل حتى الآن.</p>`;
+                return;
+            }
 
             studentsData.forEach((student, index) => {
                 const item = document.createElement('div');
-                item.className = "flex items-center justify-between bg-white/50 p-3 rounded-2xl border border-white/60 shadow-sm transition hover:bg-white/80";
+                item.className = "flex items-center justify-between bg-white/70 p-3 rounded-2xl border border-white/80 shadow-sm";
                 item.innerHTML = `
                     <span class="font-bold text-[#0f3d2e] text-sm">${index + 1}. ${student}</span>
                     <div class="flex items-center gap-3">
-                        <div class="flex gap-1 bg-slate-100 p-1 rounded-xl">
+                        <div class="flex gap-1 bg-slate-50 p-1 rounded-xl">
                             <label class="relative cursor-pointer">
                                 <input type="radio" name="attendance_${index}" value="حاضر" checked class="peer sr-only">
-                                <span class="block px-3 py-1.5 rounded-lg text-xs font-bold text-slate-500 border border-transparent transition-all hover:bg-emerald-100">حاضر</span>
+                                <span class="block px-3 py-1.5 rounded-lg text-xs font-bold text-slate-500 border border-transparent transition-all">حاضر</span>
                             </label>
                             <label class="relative cursor-pointer">
                                 <input type="radio" name="attendance_${index}" value="غائب" class="peer sr-only absent">
-                                <span class="block px-3 py-1.5 rounded-lg text-xs font-bold text-slate-500 border border-transparent transition-all hover:bg-pink-100">غائب</span>
+                                <span class="block px-3 py-1.5 rounded-lg text-xs font-bold text-slate-500 border border-transparent transition-all">غائب</span>
                             </label>
                         </div>
-                        <button onclick="deleteStudent('${student}')" class="w-8 h-8 rounded-full bg-red-50 text-red-400 hover:bg-red-500 hover:text-white transition-all flex items-center justify-center" title="حذف الطالب">
+                        <button onclick="deleteStudent('${student}')" class="w-8 h-8 rounded-full bg-red-50 text-red-400 hover:bg-red-500 hover:text-white transition-all flex items-center justify-center">
                             <i class="fa-solid fa-trash-can text-xs"></i>
                         </button>
                     </div>
@@ -324,46 +273,33 @@
         }
 
         async function addNewStudent() {
-            const input = document.getElementById('newStudentName');
-            const studentName = input.value.trim();
-            if (!studentName) { showToast('يرجى كتابة اسم الطالب', 'error'); return; }
-            if (studentsData.includes(studentName)) { showToast('الطالب موجود مسبقاً', 'error'); return; }
+            const input = document.getElementById('newStudentName'), studentName = input.value.trim();
+            if (!studentName || studentsData.includes(studentName)) return;
 
-            studentsData.push(studentName);
-            renderStudents();
-            input.value = '';
+            studentsData.push(studentName); renderStudents(); input.value = '';
             
             if (navigator.onLine) {
-                showToast('تمت إضافة الطالب محلياً، جاري المزامنة..', 'success');
-                try {
-                    await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'add_student', className: currentClass, studentName: studentName }) });
-                } catch (e) { console.error(e); }
-            } else {
-                showToast('تمت إضافة الطالب للذاكرة وسيتم المزامنة لاحقاً', 'warning');
-            }
+                showToast('تمت إضافة الطالب', 'success');
+                try { await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'add_student', className: currentClass, studentName: studentName }) }); } catch (e) {}
+            } else { showToast('أُضيف للذاكرة مؤقتاً', 'warning'); }
         }
 
         async function deleteStudent(studentName) {
-            if (!confirm(`حذف الطالب ${studentName}؟`)) return;
-            studentsData = studentsData.filter(s => s !== studentName);
-            renderStudents();
+            if (!confirm(`حذف ${studentName}؟`)) return;
+            studentsData = studentsData.filter(s => s !== studentName); renderStudents();
             
             if (navigator.onLine) {
-                showToast('تم حذف الطالب', 'success');
-                try {
-                    await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'delete_student', className: currentClass, studentName: studentName }) });
-                } catch (e) { console.error(e); }
-            } else {
-                showToast('تم الحذف من الذاكرة مؤقتاً', 'warning');
-            }
+                showToast('تم الحذف', 'success');
+                try { await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'delete_student', className: currentClass, studentName: studentName }) }); } catch (e) {}
+            } else { showToast('حُذف من الذاكرة', 'warning'); }
         }
 
+        // نظام الحفظ السريع (إرسال الحزمة دفعة واحدة)
         async function saveAttendance() {
             if (studentsData.length === 0) return;
 
-            const btn = document.getElementById('saveBtn');
-            const originalHTML = btn.innerHTML;
-            btn.innerHTML = `<i class="fa-solid fa-spinner animate-spin"></i> جاري المعالجة...`;
+            const btn = document.getElementById('saveBtn'), originalHTML = btn.innerHTML;
+            btn.innerHTML = `<i class="fa-solid fa-spinner animate-spin"></i> جاري الإرسال الصاروخي...`;
             btn.classList.add('opacity-80', 'cursor-not-allowed');
             
             let payloadList = [];
@@ -374,7 +310,6 @@
                 for (let r of radios) { if (r.checked) { status = r.value; break; } }
                 
                 payloadList.push({
-                    action: 'attendance',
                     studentName: studentName,
                     className: currentClass,
                     date: formattedDate,
@@ -384,47 +319,40 @@
                 });
             }
 
+            const batchData = {
+                action: 'batch_attendance',
+                records: payloadList
+            };
+
             if (navigator.onLine) {
                 try {
-                    for (let item of payloadList) {
-                        await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(item) });
-                    }
-                    showToast('تم حفظ الحضور والغياب بنجاح تام! ✨', 'success');
-                } catch (err) {
-                    saveToOffline(payloadList);
-                }
-            } else {
-                saveToOffline(payloadList);
-            }
+                    // إرسال طلب واحد فقط يحتوي على جميع الطلاب
+                    await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(batchData) });
+                    showToast('تم الحفظ والتحديث بلمح البصر! ⚡', 'success');
+                } catch (err) { saveToOffline(batchData); }
+            } else { saveToOffline(batchData); }
 
-            btn.innerHTML = originalHTML;
-            btn.classList.remove('opacity-80', 'cursor-not-allowed');
+            btn.innerHTML = originalHTML; btn.classList.remove('opacity-80', 'cursor-not-allowed');
         }
 
-        function saveToOffline(payloadList) {
-            let pending = JSON.parse(localStorage.getItem('ghars_pending_sync') || '[]');
-            payloadList.forEach(newItem => {
-                let existingIndex = pending.findIndex(p => p.studentName === newItem.studentName && p.date === newItem.date);
-                if(existingIndex > -1) pending[existingIndex] = newItem;
-                else pending.push(newItem);
-            });
-            localStorage.setItem('ghars_pending_sync', JSON.stringify(pending));
-            showToast('الإنترنت غير متوفر. تم الحفظ في الهاتف، ستتم المزامنة تلقائياً', 'warning', 6000);
+        function saveToOffline(batchData) {
+            let pending = JSON.parse(localStorage.getItem('ghars_pending_batches') || '[]');
+            let existingIndex = pending.findIndex(b => b.records[0].className === batchData.records[0].className && b.records[0].date === batchData.records[0].date);
+            if(existingIndex > -1) pending[existingIndex] = batchData; else pending.push(batchData);
+            
+            localStorage.setItem('ghars_pending_batches', JSON.stringify(pending));
+            showToast('الإنترنت غير متوفر. تم الحفظ في الهاتف وسيتم الإرسال تلقائياً', 'warning', 6000);
         }
 
         async function syncOfflineData() {
-            let pending = JSON.parse(localStorage.getItem('ghars_pending_sync') || '[]');
+            let pending = JSON.parse(localStorage.getItem('ghars_pending_batches') || '[]');
             if (pending.length > 0 && navigator.onLine) {
-                showToast('الإنترنت عاد! جاري مزامنة السجلات المعلقة...', 'success');
+                showToast('الإنترنت عاد! جاري المزامنة...', 'success');
                 try {
-                    for (let item of pending) {
-                        await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(item) });
-                    }
-                    localStorage.removeItem('ghars_pending_sync');
-                    showToast('تمت مزامنة جميع السجلات المعلقة بنجاح! ✨', 'success');
-                } catch (e) {
-                    console.error('فشلت المزامنة الخلفية');
-                }
+                    for (let batch of pending) { await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(batch) }); }
+                    localStorage.removeItem('ghars_pending_batches');
+                    showToast('تمت مزامنة جميع السجلات بنجاح! ✨', 'success');
+                } catch (e) {}
             }
         }
 
@@ -433,7 +361,6 @@
             document.getElementById('teacherIdInput').value = '';
             document.getElementById('dashboardScreen').classList.add('hidden');
             document.getElementById('loginScreen').classList.remove('hidden');
-            showToast('تم تسجيل الخروج', 'success');
         }
     </script>
 </body>
