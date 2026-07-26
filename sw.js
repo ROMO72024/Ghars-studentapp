@@ -1,4 +1,4 @@
-const CACHE_NAME = "ghars-app-v5";
+const CACHE_NAME = "ghars-app-v6";
 const ASSETS = [
     "./",
     "./index.html",
@@ -7,7 +7,7 @@ const ASSETS = [
 ];
 
 self.addEventListener("install", (e) => {
-    self.skipWaiting(); // فرض التحديث فوراً
+    self.skipWaiting(); 
     e.waitUntil(caches.open(CACHE_NAME).then((cache) => cache.addAll(ASSETS)));
 });
 
@@ -21,13 +21,18 @@ self.addEventListener("activate", (e) => {
 });
 
 self.addEventListener("fetch", (e) => {
-    // 1. إذا كان الطلب لقاعدة البيانات (Google Script)، دعه يمر عبر الإنترنت فوراً ولا تتدخل!
+    // الحل الجذري: إذا كانت العملية "إرسال بيانات" (POST)، اتركها تمر للإنترنت مباشرة ولا تتدخل أبداً
+    if (e.request.method !== "GET") {
+        return; 
+    }
+
+    // للطلبات الأخرى المتعلقة بالداتابيز، دعه يمر
     if (e.request.url.includes("script.google.com") || e.request.url.includes("googleusercontent.com")) {
         e.respondWith(fetch(e.request));
         return;
     }
 
-    // 2. لباقي الملفات (التصميم): جرب الإنترنت أولاً، وإذا انقطع، استخدم الذاكرة
+    // لباقي ملفات التصميم، استخدم الإنترنت وإن فشل استخدم الذاكرة
     e.respondWith(
         fetch(e.request).catch(() => {
             return caches.match(e.request);
