@@ -20,6 +20,7 @@
         :root {
             --ghars-green: #0f3d2e;
             --ghars-magenta: #be185d;
+            --ghars-orange: #d97706; /* لون جديد للمأذون */
         }
         body { 
             font-family: 'Tajawal', sans-serif; 
@@ -44,10 +45,16 @@
             100% { transform: translate(20px, -30px) scale(1.1); }
         }
 
+        /* تنسيقات الأزرار (حاضر، مأذون، غائب) */
         input[type="radio"]:checked + span {
             background-color: var(--ghars-green);
             color: white;
             border-color: var(--ghars-green);
+        }
+        input[type="radio"].excused:checked + span {
+            background-color: var(--ghars-orange);
+            color: white;
+            border-color: var(--ghars-orange);
         }
         input[type="radio"].absent:checked + span {
             background-color: var(--ghars-magenta);
@@ -147,7 +154,7 @@
     <!-- Script -->
     <script>
         // ======= الرابط الخاص بك يوضع هنا =======
-        const GAS_URL = "https://script.google.com/macros/s/AKfycbzTg69JRVgMlXfbh80dooyC3_zPtcAYeOh95N3v7I19t3HcukrjKgDFHouMON6NJjqNFA/exec";
+        const GAS_URL = "أدخل_رابط_الـ_Apps_Script_هنا";
 
         let currentTeacher = null, currentClass = null, studentsData = [];
 
@@ -162,12 +169,10 @@
         document.getElementById('dateDisplay').innerText = formattedDate;
         document.getElementById('dayDisplay').innerText = currentDayName;
 
-        // --- خدعة التنظيف الذاتي لمنع تعليق الكاش في هواتف المعلمات ---
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
-                // إضافة رقم عشوائي للرابط يجبر الهاتف على تحميل الكود الجديد وتجاهل القديم
                 navigator.serviceWorker.register('./sw.js?v=' + new Date().getTime()).then(reg => {
-                    reg.update(); // فرض التحديث
+                    reg.update(); 
                 });
             });
         }
@@ -209,7 +214,6 @@
 
             if (navigator.onLine) {
                 try {
-                    // كود الاتصال النظيف الخالي من التعقيدات
                     let res = await fetch(GAS_URL);
                     let data = await res.json();
                     let teacherFound = null;
@@ -236,7 +240,6 @@
                         showToast('كود المعلمة غير صحيح', 'error');
                     }
                 } catch (err) { 
-                    // إذا فشل الاتصال لسبب ما، جرب الأوفلاين
                     checkOfflineLogin(idInput); 
                 } 
                 finally { btn.innerHTML = originalHTML; }
@@ -285,6 +288,7 @@
                 }
 
                 const isPresent = status === 'حاضر' ? 'checked' : '';
+                const isExcused = status === 'مأذون' ? 'checked' : '';
                 const isAbsent = status === 'غائب' ? 'checked' : '';
 
                 const item = document.createElement('div');
@@ -296,6 +300,10 @@
                             <label class="relative cursor-pointer">
                                 <input type="radio" name="attendance_${index}" value="حاضر" ${isPresent} class="peer sr-only">
                                 <span class="block px-3 py-1.5 rounded-lg text-xs font-bold text-slate-500 border border-transparent transition-all">حاضر</span>
+                            </label>
+                            <label class="relative cursor-pointer">
+                                <input type="radio" name="attendance_${index}" value="مأذون" ${isExcused} class="peer sr-only excused">
+                                <span class="block px-3 py-1.5 rounded-lg text-xs font-bold text-slate-500 border border-transparent transition-all">مأذون</span>
                             </label>
                             <label class="relative cursor-pointer">
                                 <input type="radio" name="attendance_${index}" value="غائب" ${isAbsent} class="peer sr-only absent">
