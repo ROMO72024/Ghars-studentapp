@@ -186,13 +186,14 @@
         document.getElementById('dateDisplay').innerText = formattedDate;
         document.getElementById('dayDisplay').innerText = currentDayName;
 
-        if ('serviceWorker' in navigator) {
+       if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
-                navigator.serviceWorker.register('./sw.js?v=' + new Date().getTime()).then(reg => {
-                    reg.update(); 
-                });
-            });
-        }
+              navigator.serviceWorker.register('./sw.js')
+                .then((reg) => {
+                  console.log('تم التسجيل بنجاح');
+        });
+    });
+  }
 
         function showToast(message, type = 'success', duration = 4000) {
             const toast = document.getElementById('toast'), icon = document.getElementById('toastIcon'), msg = document.getElementById('toastMessage');
