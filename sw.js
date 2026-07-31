@@ -1,11 +1,10 @@
-const CACHE_NAME = "ghars-app-final-v8"; // غيرنا الرقم عشان نُجبر التطبيق يتحدث
+const CACHE_NAME = "ghars-app-final-v9"; // تم رفع الإصدار لتحديث أجهزة المعلمات
 const ASSETS = [
     "./",
     "./index.html",
     "./manifest.json",
     "./logo.png",
-    "./tailwind.js",      // <-- هذا كان ناقص وهو سبب المشكلة!
-    "./image_23b11f.png"  // <-- تأكد إن هذا هو اسم الشعار الموجود في مشروعك
+    "./tailwind.js"
 ];
 
 self.addEventListener("install", (e) => {
@@ -23,12 +22,9 @@ self.addEventListener("activate", (e) => {
 });
 
 self.addEventListener("fetch", (e) => {
-    // الأهم: منع ملف الأوفلاين من التدخل نهائياً في عمليات جوجل!
     if (e.request.url.includes("script.google.com") || e.request.url.includes("googleusercontent.com") || e.request.method !== "GET") {
         return; 
     }
-
-    // لباقي الملفات (الصور والتصميم)
     e.respondWith(
         fetch(e.request).catch(() => {
             return caches.match(e.request);
