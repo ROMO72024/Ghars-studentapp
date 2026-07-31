@@ -7,11 +7,8 @@
     
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#0f3d2e">
-    
-    <!-- أيقونة الموقع -->
-    <link rel="icon" href="logo.png" type="image/jpeg">
+    <link rel="icon" href="logo.png" type="image/png">
 
-    <!-- لضمان عمل التصميم بدون إنترنت، سنقوم بتغيير هذا الرابط لاحقاً في خطوة التجميع -->
     <script src="tailwind.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -27,8 +24,6 @@
             background-color: #f0fdf4;
             overflow-x: hidden;
         }
-        
-        /* --- تعديل الحماية من الانهيار البصري --- */
         img[alt="شعار غرس"] {
             width: 80px !important;
             height: 80px !important;
@@ -36,43 +31,23 @@
             max-height: 80px !important;
             object-fit: cover !important;
         }
-        .hidden-screen {
-            display: none !important;
-        }
-        
+        .hidden-screen { display: none !important; }
         .glass-card {
             background: rgba(255, 255, 255, 0.85);
             backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
             border: 1px solid rgba(255, 255, 255, 0.6);
             box-shadow: 0 15px 35px rgba(15, 61, 46, 0.08);
         }
-
         .blob-1 { background: var(--ghars-magenta); animation: blob 8s infinite alternate; }
         .blob-2 { background: var(--ghars-green); animation: blob 8s infinite alternate-reverse 2s; }
         .blob-3 { background: #34d399; animation: blob 8s infinite alternate 4s; }
-
         @keyframes blob {
             0% { transform: translate(0px, 0px) scale(1); }
             100% { transform: translate(20px, -30px) scale(1.1); }
         }
-
-        /* تنسيقات الأزرار (حاضر، مأذون، غائب) */
-        input[type="radio"]:checked + span {
-            background-color: var(--ghars-green);
-            color: white;
-            border-color: var(--ghars-green);
-        }
-        input[type="radio"].excused:checked + span {
-            background-color: var(--ghars-orange);
-            color: white;
-            border-color: var(--ghars-orange);
-        }
-        input[type="radio"].absent:checked + span {
-            background-color: var(--ghars-magenta);
-            color: white;
-            border-color: var(--ghars-magenta);
-        }
+        input[type="radio"]:checked + span { background-color: var(--ghars-green); color: white; border-color: var(--ghars-green); }
+        input[type="radio"].excused:checked + span { background-color: var(--ghars-orange); color: white; border-color: var(--ghars-orange); }
+        input[type="radio"].absent:checked + span { background-color: var(--ghars-magenta); color: white; border-color: var(--ghars-magenta); }
     </style>
 </head>
 <body class="min-h-screen relative flex flex-col justify-between text-slate-800">
@@ -90,7 +65,6 @@
     </div>
 
     <main class="relative z-10 max-w-lg mx-auto p-5 w-full flex-grow flex flex-col pt-10">
-        
         <div class="text-center mb-8">
             <div class="inline-block p-2 rounded-3xl glass-card mb-4 shadow-lg bg-white/90">
                 <img src="logo.png" alt="شعار غرس" class="w-20 h-20 rounded-2xl object-cover mx-auto">
@@ -118,7 +92,6 @@
 
         <!-- Dashboard -->
         <div id="dashboardScreen" class="hidden-screen space-y-5 mb-10">
-            
             <div class="glass-card rounded-3xl p-5 flex flex-col gap-4">
                 <div class="flex justify-between items-center border-b border-white/60 pb-4">
                     <div class="flex items-center gap-3">
@@ -130,7 +103,6 @@
                             <p class="text-xs font-bold text-[#be185d]">الفصل: <span id="classNameDisplay">--</span></p>
                         </div>
                     </div>
-                    <!-- الأزرار الجديدة: المزامنة وتسجيل الخروج -->
                     <div class="flex gap-2">
                         <button onclick="syncOfflineData()" class="w-10 h-10 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center shadow-sm" title="مزامنة البيانات">
                             <i class="fa-solid fa-arrows-rotate"></i>
@@ -161,7 +133,6 @@
                     <i class="fa-solid fa-bolt text-yellow-400"></i> حفظ وتحديث سريع
                 </button>
             </div>
-
         </div>
     </main>
 
@@ -169,7 +140,6 @@
         <p class="text-xs font-bold text-slate-500">Made By <span class="text-[#be185d] text-sm">ROMO7</span> &copy; 2026</p>
     </footer>
 
-    <!-- Script -->
     <script>
         const GAS_URL = "https://script.google.com/macros/s/AKfycbwTezSxIIkrM9d9Y0OFqq2BynFp6yhstSzg3DgKzHlJDnOlCMhJo2f8Hd7x63l66HKSvg/exec";
 
@@ -186,14 +156,13 @@
         document.getElementById('dateDisplay').innerText = formattedDate;
         document.getElementById('dayDisplay').innerText = currentDayName;
 
-       if ('serviceWorker' in navigator) {
+        if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
-              navigator.serviceWorker.register('./sw.js')
-                .then((reg) => {
-                  console.log('تم التسجيل بنجاح');
-        });
-    });
-  }
+                navigator.serviceWorker.register('./sw.js').then((reg) => {
+                    console.log('تم التسجيل بنجاح');
+                });
+            });
+        }
 
         function showToast(message, type = 'success', duration = 4000) {
             const toast = document.getElementById('toast'), icon = document.getElementById('toastIcon'), msg = document.getElementById('toastMessage');
@@ -213,6 +182,24 @@
 
         window.addEventListener('online', syncOfflineData);
         window.addEventListener('offline', () => showToast('انقطع الاتصال، التطبيق يعمل في وضع الأوفلاين الآن', 'warning'));
+
+        // نظام الطابور الموحد للعمليات أوفلاين
+        function queueOfflineAction(actionData) {
+            let queue = JSON.parse(localStorage.getItem('ghars_offline_queue') || '[]');
+            
+            // تحديث سجل الحضور لنفس اليوم بدلاً من تكراره
+            if (actionData.action === 'batch_attendance') {
+                let existingIndex = queue.findIndex(item => item.action === 'batch_attendance' && item.records[0].className === actionData.records[0].className && item.records[0].date === actionData.records[0].date);
+                if (existingIndex > -1) {
+                    queue[existingIndex] = actionData;
+                } else {
+                    queue.push(actionData);
+                }
+            } else {
+                queue.push(actionData);
+            }
+            localStorage.setItem('ghars_offline_queue', JSON.stringify(queue));
+        }
 
         function updateOfflineStudentsCache() {
             let offlineData = localStorage.getItem('ghars_offline_auth');
@@ -284,7 +271,6 @@
             renderStudents();
             document.getElementById('loginScreen').classList.add('hidden-screen');
             document.getElementById('dashboardScreen').classList.remove('hidden-screen');
-            // تم إيقاف المزامنة التلقائية عند فتح الداشبورد بناءً على طلبك ليكون التحكم يدوياً
         }
 
         function renderStudents() {
@@ -295,8 +281,8 @@
                 return;
             }
 
-            let pending = JSON.parse(localStorage.getItem('ghars_pending_batches') || '[]');
-            let pendingBatch = pending.find(b => b.records && b.records.length > 0 && b.records[0].className === currentClass && b.records[0].date === formattedDate);
+            let queue = JSON.parse(localStorage.getItem('ghars_offline_queue') || '[]');
+            let pendingBatch = queue.find(item => item.action === 'batch_attendance' && item.records[0].className === currentClass && item.records[0].date === formattedDate);
 
             studentsData.forEach((student, index) => {
                 let status = 'حاضر'; 
@@ -346,10 +332,19 @@
             renderStudents(); 
             input.value = '';
             
+            const payload = { action: 'add_student', className: currentClass, studentName: studentName };
+
             if (navigator.onLine) {
                 showToast('تمت إضافة الطالب', 'success');
-                try { await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'add_student', className: currentClass, studentName: studentName }) }); } catch (e) {}
-            } else { showToast('أُضيف للذاكرة مؤقتاً', 'warning'); }
+                try { 
+                    await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(payload) }); 
+                } catch (e) { 
+                    queueOfflineAction(payload); 
+                }
+            } else { 
+                queueOfflineAction(payload);
+                showToast('الإنترنت غير متوفر: حُفظ الطالب مؤقتاً للمزامنة', 'warning'); 
+            }
         }
 
         async function deleteStudent(studentName) {
@@ -358,17 +353,26 @@
             updateOfflineStudentsCache();
             renderStudents();
             
+            const payload = { action: 'delete_student', className: currentClass, studentName: studentName };
+
             if (navigator.onLine) {
                 showToast('تم الحذف', 'success');
-                try { await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'delete_student', className: currentClass, studentName: studentName }) }); } catch (e) {}
-            } else { showToast('حُذف من الذاكرة', 'warning'); }
+                try { 
+                    await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(payload) }); 
+                } catch (e) { 
+                    queueOfflineAction(payload); 
+                }
+            } else { 
+                queueOfflineAction(payload);
+                showToast('الإنترنت غير متوفر: حُفظ أمر الحذف مؤقتاً', 'warning'); 
+            }
         }
 
         async function saveAttendance() {
             if (studentsData.length === 0) return;
 
             const btn = document.getElementById('saveBtn'), originalHTML = btn.innerHTML;
-            btn.innerHTML = `<i class="fa-solid fa-spinner animate-spin"></i> جاري الإرسال الصاروخي...`;
+            btn.innerHTML = `<i class="fa-solid fa-spinner animate-spin"></i> جاري الإرسال...`;
             btn.classList.add('opacity-80', 'cursor-not-allowed');
             
             let payloadList = [];
@@ -394,47 +398,54 @@
                 try {
                     await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(batchData) });
                     showToast('تم الحفظ والتحديث بلمح البصر! ⚡', 'success');
-                    let pending = JSON.parse(localStorage.getItem('ghars_pending_batches') || '[]');
-                    pending = pending.filter(b => b.records[0].className !== currentClass || b.records[0].date !== formattedDate);
-                    localStorage.setItem('ghars_pending_batches', JSON.stringify(pending));
-                } catch (err) { saveToOffline(batchData); }
-            } else { saveToOffline(batchData); }
+                    
+                    // تنظيف الحضور الخاص بهذا اليوم من الطابور إذا تم الإرسال بنجاح
+                    let queue = JSON.parse(localStorage.getItem('ghars_offline_queue') || '[]');
+                    queue = queue.filter(item => !(item.action === 'batch_attendance' && item.records[0].className === currentClass && item.records[0].date === formattedDate));
+                    localStorage.setItem('ghars_offline_queue', JSON.stringify(queue));
+
+                } catch (err) { 
+                    queueOfflineAction(batchData);
+                    showToast('الإنترنت ضعيف: تم الحفظ في الهاتف وسيتم الإرسال عند المزامنة', 'warning', 6000); 
+                }
+            } else { 
+                queueOfflineAction(batchData);
+                showToast('الإنترنت غير متوفر: تم الحفظ في الهاتف وسيتم الإرسال عند المزامنة', 'warning', 6000); 
+            }
 
             btn.innerHTML = originalHTML; btn.classList.remove('opacity-80', 'cursor-not-allowed');
         }
 
-        function saveToOffline(batchData) {
-            let pending = JSON.parse(localStorage.getItem('ghars_pending_batches') || '[]');
-            let existingIndex = pending.findIndex(b => b.records[0].className === batchData.records[0].className && b.records[0].date === batchData.records[0].date);
-            if(existingIndex > -1) pending[existingIndex] = batchData; else pending.push(batchData);
-            
-            localStorage.setItem('ghars_pending_batches', JSON.stringify(pending));
-            showToast('الإنترنت غير متوفر. تم الحفظ في الهاتف وسيتم الإرسال عند المزامنة', 'warning', 6000);
-        }
-
-        // دالة المزامنة المحدثة للعمل يدوياً مع إشعارات دقيقة
         async function syncOfflineData() {
             if (!navigator.onLine) {
                 showToast('لا يوجد اتصال بالإنترنت حالياً للمزامنة!', 'error');
                 return;
             }
 
-            let pending = JSON.parse(localStorage.getItem('ghars_pending_batches') || '[]');
+            let queue = JSON.parse(localStorage.getItem('ghars_offline_queue') || '[]');
             
-            if (pending.length === 0) {
+            // نقل البيانات القديمة (من الكود السابق) للطابور الجديد حتى لا تضيع
+            let oldPending = JSON.parse(localStorage.getItem('ghars_pending_batches') || '[]');
+            if (oldPending.length > 0) {
+                queue.push(...oldPending);
+                localStorage.removeItem('ghars_pending_batches');
+            }
+
+            if (queue.length === 0) {
                 showToast('لا توجد بيانات معلقة، كل شيء محدث! ✨', 'success');
                 return;
             }
 
-            showToast('جاري مزامنة البيانات مع السيرفر...', 'warning');
+            showToast(`جاري مزامنة ${queue.length} عمليات مع السيرفر...`, 'warning');
             try {
-                for (let batch of pending) { 
-                    await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(batch) }); 
+                // نرسل الطلبات بالترتيب (إضافة طلاب، ثم حذف، ثم حضور) لضمان عدم وجود أخطاء في السيرفر
+                for (let action of queue) { 
+                    await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(action) }); 
                 }
-                localStorage.removeItem('ghars_pending_batches');
-                showToast('تمت مزامنة جميع السجلات بنجاح! 🚀', 'success');
+                localStorage.removeItem('ghars_offline_queue');
+                showToast('تمت مزامنة جميع السجلات (الطلاب والحضور) بنجاح! 🚀', 'success');
             } catch (e) {
-                showToast('حدث خطأ أثناء المزامنة، حاول مرة أخرى', 'error');
+                showToast('حدث خطأ أثناء المزامنة، يرجى المحاولة لاحقاً', 'error');
             }
         }
 
