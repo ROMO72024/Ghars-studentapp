@@ -11,8 +11,8 @@
     <!-- أيقونة الموقع -->
     <link rel="icon" href="logo.jpg" type="image/jpeg">
 
-    <!-- Tailwind & FontAwesome -->
-    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- لضمان عمل التصميم بدون إنترنت، سنقوم بتغيير هذا الرابط لاحقاً في خطوة التجميع -->
+    <script src="tailwind.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap');
@@ -20,7 +20,7 @@
         :root {
             --ghars-green: #0f3d2e;
             --ghars-magenta: #be185d;
-            --ghars-orange: #d97706; /* لون جديد للمأذون */
+            --ghars-orange: #d97706; 
         }
         body { 
             font-family: 'Tajawal', sans-serif; 
@@ -28,7 +28,7 @@
             overflow-x: hidden;
         }
         
-                /* --- تعديل الحماية من الانهيار البصري --- */
+        /* --- تعديل الحماية من الانهيار البصري --- */
         img[alt="شعار غرس"] {
             width: 80px !important;
             height: 80px !important;
@@ -36,12 +36,10 @@
             max-height: 80px !important;
             object-fit: cover !important;
         }
-        #dashboardScreen.hidden {
+        .hidden-screen {
             display: none !important;
         }
-        #loginScreen.hidden {
-            display: none !important;
-}
+        
         .glass-card {
             background: rgba(255, 255, 255, 0.85);
             backdrop-filter: blur(16px);
@@ -119,7 +117,7 @@
         </div>
 
         <!-- Dashboard -->
-        <div id="dashboardScreen" class="hidden space-y-5 mb-10">
+        <div id="dashboardScreen" class="hidden-screen space-y-5 mb-10">
             
             <div class="glass-card rounded-3xl p-5 flex flex-col gap-4">
                 <div class="flex justify-between items-center border-b border-white/60 pb-4">
@@ -132,9 +130,15 @@
                             <p class="text-xs font-bold text-[#be185d]">الفصل: <span id="classNameDisplay">--</span></p>
                         </div>
                     </div>
-                    <button onclick="handleLogout()" class="w-10 h-10 bg-red-50 text-red-500 rounded-2xl flex items-center justify-center shadow-sm">
-                        <i class="fa-solid fa-power-off"></i>
-                    </button>
+                    <!-- الأزرار الجديدة: المزامنة وتسجيل الخروج -->
+                    <div class="flex gap-2">
+                        <button onclick="syncOfflineData()" class="w-10 h-10 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center shadow-sm" title="مزامنة البيانات">
+                            <i class="fa-solid fa-arrows-rotate"></i>
+                        </button>
+                        <button onclick="handleLogout()" class="w-10 h-10 bg-red-50 text-red-500 rounded-2xl flex items-center justify-center shadow-sm" title="تسجيل الخروج">
+                            <i class="fa-solid fa-power-off"></i>
+                        </button>
+                    </div>
                 </div>
                 <div class="flex justify-between items-center px-2">
                     <div class="text-xs font-bold text-slate-600 flex items-center gap-2"><i class="fa-solid fa-calendar-day text-[#0f3d2e]"></i> <span id="dayDisplay">--</span></div>
@@ -167,7 +171,6 @@
 
     <!-- Script -->
     <script>
-        // ======= الرابط الخاص بك يوضع هنا =======
         const GAS_URL = "https://script.google.com/macros/s/AKfycbwTezSxIIkrM9d9Y0OFqq2BynFp6yhstSzg3DgKzHlJDnOlCMhJo2f8Hd7x63l66HKSvg/exec";
 
         let currentTeacher = null, currentClass = null, studentsData = [];
@@ -278,9 +281,9 @@
             document.getElementById('teacherNameDisplay').innerText = currentTeacher;
             document.getElementById('classNameDisplay').innerText = currentClass;
             renderStudents();
-            document.getElementById('loginScreen').classList.add('hidden');
-            document.getElementById('dashboardScreen').classList.remove('hidden');
-            syncOfflineData(); 
+            document.getElementById('loginScreen').classList.add('hidden-screen');
+            document.getElementById('dashboardScreen').classList.remove('hidden-screen');
+            // تم إيقاف المزامنة التلقائية عند فتح الداشبورد بناءً على طلبك ليكون التحكم يدوياً
         }
 
         function renderStudents() {
@@ -405,26 +408,40 @@
             if(existingIndex > -1) pending[existingIndex] = batchData; else pending.push(batchData);
             
             localStorage.setItem('ghars_pending_batches', JSON.stringify(pending));
-            showToast('الإنترنت غير متوفر. تم الحفظ في الهاتف وسيتم الإرسال تلقائياً', 'warning', 6000);
+            showToast('الإنترنت غير متوفر. تم الحفظ في الهاتف وسيتم الإرسال عند المزامنة', 'warning', 6000);
         }
 
+        // دالة المزامنة المحدثة للعمل يدوياً مع إشعارات دقيقة
         async function syncOfflineData() {
+            if (!navigator.onLine) {
+                showToast('لا يوجد اتصال بالإنترنت حالياً للمزامنة!', 'error');
+                return;
+            }
+
             let pending = JSON.parse(localStorage.getItem('ghars_pending_batches') || '[]');
-            if (pending.length > 0 && navigator.onLine) {
-                showToast('الإنترنت عاد! جاري المزامنة...', 'success');
-                try {
-                    for (let batch of pending) { await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(batch) }); }
-                    localStorage.removeItem('ghars_pending_batches');
-                    showToast('تمت مزامنة جميع السجلات بنجاح! ✨', 'success');
-                } catch (e) {}
+            
+            if (pending.length === 0) {
+                showToast('لا توجد بيانات معلقة، كل شيء محدث! ✨', 'success');
+                return;
+            }
+
+            showToast('جاري مزامنة البيانات مع السيرفر...', 'warning');
+            try {
+                for (let batch of pending) { 
+                    await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(batch) }); 
+                }
+                localStorage.removeItem('ghars_pending_batches');
+                showToast('تمت مزامنة جميع السجلات بنجاح! 🚀', 'success');
+            } catch (e) {
+                showToast('حدث خطأ أثناء المزامنة، حاول مرة أخرى', 'error');
             }
         }
 
         function handleLogout() {
             currentTeacher = null; currentClass = null; studentsData = [];
             document.getElementById('teacherIdInput').value = '';
-            document.getElementById('dashboardScreen').classList.add('hidden');
-            document.getElementById('loginScreen').classList.remove('hidden');
+            document.getElementById('dashboardScreen').classList.add('hidden-screen');
+            document.getElementById('loginScreen').classList.remove('hidden-screen');
         }
     </script>
 </body>
