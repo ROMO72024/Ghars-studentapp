@@ -58,7 +58,7 @@
         <div class="absolute bottom-[-20%] left-[20%] w-96 h-96 rounded-full mix-blend-multiply filter blur-3xl opacity-20 blob-3"></div>
     </div>
 
-    <!-- Toast Notifications -->
+    <!-- إشعارات -->
     <div id="toast" class="fixed top-5 left-1/2 transform -translate-x-1/2 z-50 transition-all duration-500 opacity-0 -translate-y-10 flex items-center gap-3 px-6 py-3 rounded-full shadow-2xl font-bold text-white pointer-events-none">
         <i id="toastIcon" class="fa-solid fa-check-circle text-xl"></i>
         <span id="toastMessage">تمت العملية!</span>
@@ -73,7 +73,7 @@
             <p class="text-sm font-semibold text-[#be185d] mt-1 bg-white/60 inline-block px-4 py-1 rounded-full">تطبيق الحضور والغياب</p>
         </div>
 
-        <!-- Login -->
+        <!-- شاشة الدخول -->
         <div id="loginScreen" class="glass-card rounded-3xl p-8 mb-10">
             <div class="text-center mb-6">
                 <h2 class="text-lg font-bold text-slate-700">مرحباً بكِ معلمتي</h2>
@@ -90,7 +90,7 @@
             </div>
         </div>
 
-        <!-- Dashboard -->
+        <!-- لوحة التحكم -->
         <div id="dashboardScreen" class="hidden-screen space-y-5 mb-10">
             <div class="glass-card rounded-3xl p-5 flex flex-col gap-4">
                 <div class="flex justify-between items-center border-b border-white/60 pb-4">
@@ -98,9 +98,20 @@
                         <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#0f3d2e] to-[#185c46] text-white flex items-center justify-center text-xl shadow-md">
                             <i class="fa-solid fa-chalkboard-user"></i>
                         </div>
+                        <!-- التعديل هنا: إضافة أيقونات القلم -->
                         <div>
-                            <h3 id="teacherNameDisplay" class="font-bold text-[#0f3d2e] text-lg">الاسم</h3>
-                            <p class="text-xs font-bold text-[#be185d]">الفصل: <span id="classNameDisplay">--</span></p>
+                            <h3 class="font-bold text-[#0f3d2e] text-lg flex items-center gap-2">
+                                <span id="teacherNameDisplay">الاسم</span>
+                                <button onclick="editTeacherName()" class="text-xs text-slate-400 hover:text-[#be185d] transition-colors" title="تعديل الاسم">
+                                    <i class="fa-solid fa-pen"></i>
+                                </button>
+                            </h3>
+                            <p class="text-xs font-bold text-[#be185d] flex items-center gap-2 mt-1">الفصل: 
+                                <span id="classNameDisplay">--</span>
+                                <button onclick="editClassName()" class="text-slate-400 hover:text-[#0f3d2e] transition-colors" title="تعديل الفصل">
+                                    <i class="fa-solid fa-pen"></i>
+                                </button>
+                            </p>
                         </div>
                     </div>
                     <div class="flex gap-2">
@@ -183,18 +194,11 @@
         window.addEventListener('online', syncOfflineData);
         window.addEventListener('offline', () => showToast('انقطع الاتصال، التطبيق يعمل في وضع الأوفلاين الآن', 'warning'));
 
-        // نظام الطابور الموحد للعمليات أوفلاين
         function queueOfflineAction(actionData) {
             let queue = JSON.parse(localStorage.getItem('ghars_offline_queue') || '[]');
-            
-            // تحديث سجل الحضور لنفس اليوم بدلاً من تكراره
             if (actionData.action === 'batch_attendance') {
                 let existingIndex = queue.findIndex(item => item.action === 'batch_attendance' && item.records[0].className === actionData.records[0].className && item.records[0].date === actionData.records[0].date);
-                if (existingIndex > -1) {
-                    queue[existingIndex] = actionData;
-                } else {
-                    queue.push(actionData);
-                }
+                if (existingIndex > -1) { queue[existingIndex] = actionData; } else { queue.push(actionData); }
             } else {
                 queue.push(actionData);
             }
@@ -338,9 +342,7 @@
                 showToast('تمت إضافة الطالب', 'success');
                 try { 
                     await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(payload) }); 
-                } catch (e) { 
-                    queueOfflineAction(payload); 
-                }
+                } catch (e) { queueOfflineAction(payload); }
             } else { 
                 queueOfflineAction(payload);
                 showToast('الإنترنت غير متوفر: حُفظ الطالب مؤقتاً للمزامنة', 'warning'); 
@@ -359,9 +361,7 @@
                 showToast('تم الحذف', 'success');
                 try { 
                     await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(payload) }); 
-                } catch (e) { 
-                    queueOfflineAction(payload); 
-                }
+                } catch (e) { queueOfflineAction(payload); }
             } else { 
                 queueOfflineAction(payload);
                 showToast('الإنترنت غير متوفر: حُفظ أمر الحذف مؤقتاً', 'warning'); 
@@ -399,7 +399,6 @@
                     await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(batchData) });
                     showToast('تم الحفظ والتحديث بلمح البصر! ⚡', 'success');
                     
-                    // تنظيف الحضور الخاص بهذا اليوم من الطابور إذا تم الإرسال بنجاح
                     let queue = JSON.parse(localStorage.getItem('ghars_offline_queue') || '[]');
                     queue = queue.filter(item => !(item.action === 'batch_attendance' && item.records[0].className === currentClass && item.records[0].date === formattedDate));
                     localStorage.setItem('ghars_offline_queue', JSON.stringify(queue));
@@ -423,8 +422,6 @@
             }
 
             let queue = JSON.parse(localStorage.getItem('ghars_offline_queue') || '[]');
-            
-            // نقل البيانات القديمة (من الكود السابق) للطابور الجديد حتى لا تضيع
             let oldPending = JSON.parse(localStorage.getItem('ghars_pending_batches') || '[]');
             if (oldPending.length > 0) {
                 queue.push(...oldPending);
@@ -438,12 +435,11 @@
 
             showToast(`جاري مزامنة ${queue.length} عمليات مع السيرفر...`, 'warning');
             try {
-                // نرسل الطلبات بالترتيب (إضافة طلاب، ثم حذف، ثم حضور) لضمان عدم وجود أخطاء في السيرفر
                 for (let action of queue) { 
                     await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(action) }); 
                 }
                 localStorage.removeItem('ghars_offline_queue');
-                showToast('تمت مزامنة جميع السجلات (الطلاب والحضور) بنجاح! 🚀', 'success');
+                showToast('تمت مزامنة جميع السجلات بنجاح! 🚀', 'success');
             } catch (e) {
                 showToast('حدث خطأ أثناء المزامنة، يرجى المحاولة لاحقاً', 'error');
             }
@@ -454,6 +450,65 @@
             document.getElementById('teacherIdInput').value = '';
             document.getElementById('dashboardScreen').classList.add('hidden-screen');
             document.getElementById('loginScreen').classList.remove('hidden-screen');
+        }
+
+        // --- دوال تعديل بيانات المعلمة والفصل الجديدة ---
+        async function editTeacherName() {
+            const newName = prompt("أدخلي اسم المعلمة الجديد:", currentTeacher);
+            if (!newName || newName.trim() === "" || newName === currentTeacher) return;
+            
+            const oldName = currentTeacher;
+            currentTeacher = newName.trim();
+            document.getElementById('teacherNameDisplay').innerText = currentTeacher;
+            
+            updateTeacherInfoInCache();
+            await sendTeacherInfoUpdate('teacherName', oldName, currentTeacher);
+        }
+
+        async function editClassName() {
+            const newClass = prompt("أدخلي اسم الفصل الجديد:", currentClass);
+            if (!newClass || newClass.trim() === "" || newClass === currentClass) return;
+            
+            const oldClass = currentClass;
+            currentClass = newClass.trim();
+            document.getElementById('classNameDisplay').innerText = currentClass;
+            
+            updateTeacherInfoInCache();
+            await sendTeacherInfoUpdate('className', oldClass, currentClass);
+        }
+
+        function updateTeacherInfoInCache() {
+            let offlineData = localStorage.getItem('ghars_offline_auth');
+            if (offlineData) {
+                let parsed = JSON.parse(offlineData);
+                parsed.teacher = currentTeacher;
+                parsed.className = currentClass;
+                localStorage.setItem('ghars_offline_auth', JSON.stringify(parsed));
+            }
+        }
+
+        async function sendTeacherInfoUpdate(updateType, oldValue, newValue) {
+            let authData = JSON.parse(localStorage.getItem('ghars_offline_auth'));
+            const payload = { 
+                action: 'update_teacher_info', 
+                updateType: updateType,
+                oldValue: oldValue, 
+                newValue: newValue,
+                teacherId: authData.id 
+            };
+
+            if (navigator.onLine) {
+                try { 
+                    await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(payload) }); 
+                    showToast('تم تحديث البيانات بنجاح', 'success');
+                } catch (e) { 
+                    queueOfflineAction(payload); 
+                    showToast('الإنترنت ضعيف: حُفظ التعديل مؤقتاً للمزامنة', 'warning');
+                }
+            } else { 
+                queueOfflineAction(payload);
+                showToast('الإنترنت غير متوفر: حُفظ التعديل مؤقتاً للمزامنة', 'warning'); 
+            }
         }
     </script>
 </body>
