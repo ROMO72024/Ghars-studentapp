@@ -1,9 +1,11 @@
-const CACHE_NAME = "ghars-app-final-v7";
+const CACHE_NAME = "ghars-app-final-v8"; // غيرنا الرقم عشان نُجبر التطبيق يتحدث
 const ASSETS = [
     "./",
     "./index.html",
     "./manifest.json",
-    "./logo.png"
+    "./logo.png",
+    "./tailwind.js",      // <-- هذا كان ناقص وهو سبب المشكلة!
+    "./image_23b11f.png"  // <-- تأكد إن هذا هو اسم الشعار الموجود في مشروعك
 ];
 
 self.addEventListener("install", (e) => {
