@@ -277,54 +277,63 @@
             document.getElementById('dashboardScreen').classList.remove('hidden-screen');
         }
 
-        function renderStudents() {
+function renderStudents() {
             const container = document.getElementById('studentsListContainer');
-            container.innerHTML = '';
+            
             if (studentsData.length === 0) {
                 container.innerHTML = `<p class="text-center text-slate-400 py-6 text-sm font-bold bg-white/50 rounded-2xl">لا يوجد طلاب مسجلين في هذا الفصل حتى الآن.</p>`;
                 return;
             }
 
+            // 1. بناء خريطة الحالات السريعة (تمنع اللوب البطيء أثناء البحث)
             let queue = JSON.parse(localStorage.getItem('ghars_offline_queue') || '[]');
             let pendingBatch = queue.find(item => item.action === 'batch_attendance' && item.records[0].className === currentClass && item.records[0].date === formattedDate);
+            
+            let statusMap = {};
+            if (pendingBatch && pendingBatch.records) {
+                pendingBatch.records.forEach(r => { statusMap[r.studentName] = r.status; });
+            }
 
+            // 2. تجميع كل عناصر HTML في الذاكرة أولاً (لمنع الدروب فريم واللاج)
+            let htmlHTML = '';
+            
             studentsData.forEach((student, index) => {
-                let status = 'حاضر'; 
-                if (pendingBatch) {
-                    let rec = pendingBatch.records.find(r => r.studentName === student);
-                    if (rec) status = rec.status;
-                }
-
+                // جلب الحالة من الخريطة السريعة
+                let status = statusMap[student] || 'حاضر'; 
+                
                 const isPresent = status === 'حاضر' ? 'checked' : '';
                 const isExcused = status === 'مأذون' ? 'checked' : '';
                 const isAbsent = status === 'غائب' ? 'checked' : '';
 
-                const item = document.createElement('div');
-                item.className = "flex items-center justify-between bg-white/70 p-3 rounded-2xl border border-white/80 shadow-sm";
-                item.innerHTML = `
-                    <span class="font-bold text-[#0f3d2e] text-sm">${index + 1}. ${student}</span>
-                    <div class="flex items-center gap-3">
-                        <div class="flex gap-1 bg-slate-50 p-1 rounded-xl">
-                            <label class="relative cursor-pointer">
-                                <input type="radio" name="attendance_${index}" value="حاضر" ${isPresent} class="peer sr-only">
-                                <span class="block px-3 py-1.5 rounded-lg text-xs font-bold text-slate-500 border border-transparent transition-all">حاضر</span>
-                            </label>
-                            <label class="relative cursor-pointer">
-                                <input type="radio" name="attendance_${index}" value="مأذون" ${isExcused} class="peer sr-only excused">
-                                <span class="block px-3 py-1.5 rounded-lg text-xs font-bold text-slate-500 border border-transparent transition-all">مأذون</span>
-                            </label>
-                            <label class="relative cursor-pointer">
-                                <input type="radio" name="attendance_${index}" value="غائب" ${isAbsent} class="peer sr-only absent">
-                                <span class="block px-3 py-1.5 rounded-lg text-xs font-bold text-slate-500 border border-transparent transition-all">غائب</span>
-                            </label>
+                // إضافة نفس التصميم الخاص بك تماماً بدون أي تغيير في الكلاسات
+                htmlHTML += `
+                    <div class="flex items-center justify-between bg-white/70 p-3 rounded-2xl border border-white/80 shadow-sm">
+                        <span class="font-bold text-[#0f3d2e] text-sm">${index + 1}. ${student}</span>
+                        <div class="flex items-center gap-3">
+                            <div class="flex gap-1 bg-slate-50 p-1 rounded-xl">
+                                <label class="relative cursor-pointer">
+                                    <input type="radio" name="attendance_${index}" value="حاضر" ${isPresent} class="peer sr-only">
+                                    <span class="block px-3 py-1.5 rounded-lg text-xs font-bold text-slate-500 border border-transparent transition-all">حاضر</span>
+                                </label>
+                                <label class="relative cursor-pointer">
+                                    <input type="radio" name="attendance_${index}" value="مأذون" ${isExcused} class="peer sr-only excused">
+                                    <span class="block px-3 py-1.5 rounded-lg text-xs font-bold text-slate-500 border border-transparent transition-all">مأذون</span>
+                                </label>
+                                <label class="relative cursor-pointer">
+                                    <input type="radio" name="attendance_${index}" value="غائب" ${isAbsent} class="peer sr-only absent">
+                                    <span class="block px-3 py-1.5 rounded-lg text-xs font-bold text-slate-500 border border-transparent transition-all">غائب</span>
+                                </label>
+                            </div>
+                            <button onclick="deleteStudent('${student}')" class="w-8 h-8 rounded-full bg-red-50 text-red-400 hover:bg-red-500 hover:text-white transition-all flex items-center justify-center">
+                                <i class="fa-solid fa-trash-can text-xs"></i>
+                            </button>
                         </div>
-                        <button onclick="deleteStudent('${student}')" class="w-8 h-8 rounded-full bg-red-50 text-red-400 hover:bg-red-500 hover:text-white transition-all flex items-center justify-center">
-                            <i class="fa-solid fa-trash-can text-xs"></i>
-                        </button>
                     </div>
                 `;
-                container.appendChild(item);
             });
+            
+            // 3. حقن الكود بالكامل دفعة واحدة في الشاشة
+            container.innerHTML = htmlHTML;
         }
 
         async function addNewStudent() {
