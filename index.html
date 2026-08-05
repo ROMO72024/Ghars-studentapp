@@ -98,7 +98,6 @@
                         <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#0f3d2e] to-[#185c46] text-white flex items-center justify-center text-xl shadow-md">
                             <i class="fa-solid fa-chalkboard-user"></i>
                         </div>
-                        <!-- التعديل هنا: إضافة أيقونات القلم -->
                         <div>
                             <h3 class="font-bold text-[#0f3d2e] text-lg flex items-center gap-2">
                                 <span id="teacherNameDisplay">الاسم</span>
@@ -277,7 +276,10 @@
             document.getElementById('dashboardScreen').classList.remove('hidden-screen');
         }
 
-function renderStudents() {
+        // ==========================================
+        // الدالة المعدلة السريعة (تجميع HTML لمنع اللاج)
+        // ==========================================
+        function renderStudents() {
             const container = document.getElementById('studentsListContainer');
             
             if (studentsData.length === 0) {
@@ -285,7 +287,6 @@ function renderStudents() {
                 return;
             }
 
-            // 1. بناء خريطة الحالات السريعة (تمنع اللوب البطيء أثناء البحث)
             let queue = JSON.parse(localStorage.getItem('ghars_offline_queue') || '[]');
             let pendingBatch = queue.find(item => item.action === 'batch_attendance' && item.records[0].className === currentClass && item.records[0].date === formattedDate);
             
@@ -294,18 +295,15 @@ function renderStudents() {
                 pendingBatch.records.forEach(r => { statusMap[r.studentName] = r.status; });
             }
 
-            // 2. تجميع كل عناصر HTML في الذاكرة أولاً (لمنع الدروب فريم واللاج)
             let htmlHTML = '';
             
             studentsData.forEach((student, index) => {
-                // جلب الحالة من الخريطة السريعة
                 let status = statusMap[student] || 'حاضر'; 
                 
                 const isPresent = status === 'حاضر' ? 'checked' : '';
                 const isExcused = status === 'مأذون' ? 'checked' : '';
                 const isAbsent = status === 'غائب' ? 'checked' : '';
 
-                // إضافة نفس التصميم الخاص بك تماماً بدون أي تغيير في الكلاسات
                 htmlHTML += `
                     <div class="flex items-center justify-between bg-white/70 p-3 rounded-2xl border border-white/80 shadow-sm">
                         <span class="font-bold text-[#0f3d2e] text-sm">${index + 1}. ${student}</span>
@@ -332,7 +330,6 @@ function renderStudents() {
                 `;
             });
             
-            // 3. حقن الكود بالكامل دفعة واحدة في الشاشة
             container.innerHTML = htmlHTML;
         }
 
@@ -461,7 +458,6 @@ function renderStudents() {
             document.getElementById('loginScreen').classList.remove('hidden-screen');
         }
 
-        // --- دوال تعديل بيانات المعلمة والفصل الجديدة ---
         async function editTeacherName() {
             const newName = prompt("أدخلي اسم المعلمة الجديد:", currentTeacher);
             if (!newName || newName.trim() === "" || newName === currentTeacher) return;
