@@ -243,7 +243,7 @@
 
             // 2. أول مرة يتم فيها تسجيل الكود 
             if (navigator.onLine) {
-                showToast('أول مرة دخول.. جاري جلب بيانات فصلك فقط ⏳', 'warning', 5000);
+                showToast('أول مرة دخول.. جاري جلب البيانات قد يستغرق دقيقتين ⏳', 'warning', 5000);
                 try {
                     // التعديل السحري: نرسل كود المعلمة للسيرفر ليجلب بياناتها فقط!
                     let res = await fetch(`${GAS_URL}?action=login&teacherId=${encodeURIComponent(idInput)}`);
