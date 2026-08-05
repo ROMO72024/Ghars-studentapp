@@ -214,7 +214,7 @@
         }
 
         // ==========================================
-        // تعديل آلية تسجيل الدخول (صاروخية / Cache-First)
+        // التحديث الجديد: دخول صاروخي يطلب بيانات المعلمة فقط
         // ==========================================
         async function handleLogin() {
             const idInput = document.getElementById('teacherIdInput').value.trim();
@@ -223,7 +223,7 @@
             const btn = event.currentTarget, originalHTML = btn.innerHTML;
             btn.innerHTML = `<i class="fa-solid fa-spinner animate-spin"></i> جاري التحقق...`;
 
-            // 1. الدخول السريع (التحقق من الذاكرة المحلية أولاً)
+            // 1. الدخول السريع جداً من الذاكرة
             let offlineData = localStorage.getItem('ghars_offline_auth');
             if (offlineData) {
                 let parsed = JSON.parse(offlineData);
@@ -236,34 +236,48 @@
                     showToast(`تسجيل دخول سريع! أهلاً بكِ أ. ${currentTeacher} ⚡`, 'success');
                     btn.innerHTML = originalHTML;
                     
-                    // تحديث صامت للطلاب في الخلفية بدون تعطيل المعلمة
                     if(navigator.onLine) silentBackgroundSync(idInput);
-                    return; // إنهاء الدالة فوراً للدخول السريع
+                    return; 
                 }
             }
 
-            // 2. إذا كانت أول مرة ولم يجد الكود محلياً، أو الكود مختلف (يضطر للاتصال بجوجل)
+            // 2. أول مرة يتم فيها تسجيل الكود 
             if (navigator.onLine) {
-                showToast('أول مرة دخول.. يتم جلب البيانات من السيرفر ⏳', 'warning', 5000);
+                showToast('أول مرة دخول.. جاري جلب بيانات فصلك فقط ⏳', 'warning', 5000);
                 try {
-                    let res = await fetch(GAS_URL);
+                    // التعديل السحري: نرسل كود المعلمة للسيرفر ليجلب بياناتها فقط!
+                    let res = await fetch(`${GAS_URL}?action=login&teacherId=${encodeURIComponent(idInput)}`);
                     let data = await res.json();
+                    
                     let teacherFound = null;
                     
-                    for (let i = 1; i < data.teachers.length; i++) {
-                        if (String(data.teachers[i][0]).trim() === idInput || String(data.teachers[i][1]).trim() === idInput) {
-                            teacherFound = { name: data.teachers[i][1] || data.teachers[i][0], className: data.teachers[i][2] || "عام" };
-                            break;
+                    // إذا كان السيرفر محدث ويدعم الجلب السريع
+                    if (data.fastLogin) {
+                        if (data.success) {
+                            teacherFound = { name: data.teacherName, className: data.className };
+                            studentsData = data.students;
+                        }
+                    } else {
+                        // دعم احتياطي للسيرفر القديم في حال لم نحدثه بعد
+                        for (let i = 1; i < data.teachers.length; i++) {
+                            if (String(data.teachers[i][0]).trim() === idInput || String(data.teachers[i][1]).trim() === idInput) {
+                                teacherFound = { name: data.teachers[i][1] || data.teachers[i][0], className: data.teachers[i][2] || "عام" };
+                                break;
+                            }
+                        }
+                        if (teacherFound) {
+                            studentsData = [];
+                            for (let i = 1; i < data.students.length; i++) {
+                                if (String(data.students[i][0]).trim() === String(teacherFound.className).trim()) {
+                                    studentsData.push(data.students[i][1]);
+                                }
+                            }
                         }
                     }
 
                     if (teacherFound) {
                         currentTeacher = teacherFound.name;
                         currentClass = teacherFound.className;
-                        studentsData = [];
-                        for (let i = 1; i < data.students.length; i++) {
-                            if (String(data.students[i][0]).trim() === String(currentClass).trim()) studentsData.push(data.students[i][1]);
-                        }
 
                         localStorage.setItem('ghars_offline_auth', JSON.stringify({ id: idInput, teacher: currentTeacher, className: currentClass, students: studentsData }));
                         openDashboard();
@@ -281,27 +295,37 @@
             }
         }
 
-        // ==========================================
-        // التحديث الصامت للبيانات في الخلفية (لا يزعج المستخدم)
-        // ==========================================
         async function silentBackgroundSync(idInput) {
             try {
-                let res = await fetch(GAS_URL);
+                let res = await fetch(`${GAS_URL}?action=login&teacherId=${encodeURIComponent(idInput)}`);
                 let data = await res.json();
+                
                 let teacherFound = null;
-                for (let i = 1; i < data.teachers.length; i++) {
-                    if (String(data.teachers[i][0]).trim() === idInput || String(data.teachers[i][1]).trim() === idInput) {
-                        teacherFound = { name: data.teachers[i][1] || data.teachers[i][0], className: data.teachers[i][2] || "عام" };
-                        break;
+                let newStudents = [];
+
+                if (data.fastLogin && data.success) {
+                    teacherFound = { name: data.teacherName, className: data.className };
+                    newStudents = data.students;
+                } else if (!data.fastLogin) {
+                    for (let i = 1; i < data.teachers.length; i++) {
+                        if (String(data.teachers[i][0]).trim() === idInput || String(data.teachers[i][1]).trim() === idInput) {
+                            teacherFound = { name: data.teachers[i][1] || data.teachers[i][0], className: data.teachers[i][2] || "عام" };
+                            break;
+                        }
+                    }
+                    if (teacherFound) {
+                        for (let i = 1; i < data.students.length; i++) {
+                            if (String(data.students[i][0]).trim() === String(teacherFound.className).trim()) {
+                                newStudents.push(data.students[i][1]);
+                            }
+                        }
                     }
                 }
+
                 if (teacherFound) {
                     currentTeacher = teacherFound.name;
                     currentClass = teacherFound.className;
-                    studentsData = [];
-                    for (let i = 1; i < data.students.length; i++) {
-                        if (String(data.students[i][0]).trim() === String(currentClass).trim()) studentsData.push(data.students[i][1]);
-                    }
+                    studentsData = newStudents;
                     localStorage.setItem('ghars_offline_auth', JSON.stringify({ id: idInput, teacher: currentTeacher, className: currentClass, students: studentsData }));
                     renderStudents(); 
                 }
