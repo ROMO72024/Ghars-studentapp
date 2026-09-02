@@ -1,9 +1,10 @@
-const CACHE_NAME = "ghars-app-final-v9"; // تم رفع الإصدار لتحديث أجهزة المعلمات
+const CACHE_NAME = "ghars-app-original-ui-v10";
 const ASSETS = [
     "./",
     "./index.html",
     "./manifest.json",
     "./logo.png",
+    "./styles.css?v=1.0.0",
     "./tailwind.js"
 ];
 

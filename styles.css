@@ -1,0 +1,403 @@
+:root {
+    --ui-green-950: #062f23;
+    --ui-green-900: #0a4a33;
+    --ui-green-800: #0f6844;
+    --ui-green-100: #dff3e8;
+    --ui-green-50: #f1faf5;
+    --ui-pink-700: #a70f55;
+    --ui-pink-600: #be185d;
+    --ui-pink-100: #fce7f3;
+    --ui-gold: #a86d00;
+    --ui-red: #b42318;
+    --ui-text: #17362d;
+    --ui-muted: #697b75;
+    --ui-line: #dbe8e1;
+    --ui-card: rgba(255, 255, 255, 0.96);
+    --ui-shadow: 0 22px 60px rgba(6, 47, 35, 0.13);
+}
+
+* {
+    box-sizing: border-box;
+}
+
+html {
+    min-height: 100%;
+    background: #f3f8f5;
+}
+
+body {
+    min-height: 100vh;
+    min-height: 100dvh;
+    margin: 0;
+    color: var(--ui-text);
+    background:
+        radial-gradient(circle at 92% 2%, rgba(15, 104, 68, 0.14), transparent 32rem),
+        radial-gradient(circle at 3% 96%, rgba(190, 24, 93, 0.08), transparent 28rem),
+        #f3f8f5 !important;
+    font-family: "Tajawal", Tahoma, Arial, sans-serif !important;
+    -webkit-font-smoothing: antialiased;
+}
+
+button,
+input {
+    font: inherit;
+}
+
+button {
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+}
+
+button:focus-visible,
+input:focus-visible {
+    outline: 3px solid rgba(190, 24, 93, 0.22) !important;
+    outline-offset: 2px;
+}
+
+body > .fixed.inset-0 {
+    display: none !important;
+}
+
+main {
+    width: min(100%, 820px) !important;
+    max-width: 820px !important;
+    min-height: calc(100vh - 58px);
+    min-height: calc(100dvh - 58px);
+    justify-content: center;
+    padding: max(22px, env(safe-area-inset-top)) 16px 32px !important;
+}
+
+main > .text-center {
+    margin-bottom: 20px !important;
+}
+
+main > .text-center > div {
+    width: 124px;
+    height: 112px;
+    display: grid !important;
+    place-items: center;
+    margin-bottom: 8px !important;
+    padding: 0 !important;
+    border: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+}
+
+img[alt="شعار غرس"] {
+    width: 112px !important;
+    height: 112px !important;
+    max-width: 112px !important;
+    max-height: 112px !important;
+    object-fit: contain !important;
+    border-radius: 0 !important;
+}
+
+main > .text-center h1 {
+    margin: 0 !important;
+    color: var(--ui-green-950) !important;
+    font-size: clamp(1.45rem, 5vw, 2rem) !important;
+    line-height: 1.3;
+}
+
+main > .text-center p {
+    margin-top: 7px !important;
+    padding: 4px 13px !important;
+    color: var(--ui-pink-700) !important;
+    background: var(--ui-pink-100) !important;
+    font-size: 0.8rem !important;
+}
+
+.glass-card {
+    border: 1px solid rgba(255, 255, 255, 0.82) !important;
+    background: var(--ui-card) !important;
+    box-shadow: var(--ui-shadow) !important;
+    backdrop-filter: none !important;
+}
+
+#loginScreen {
+    width: min(100%, 430px);
+    align-self: center;
+    margin: 0 auto 26px !important;
+    padding: 30px !important;
+    border-radius: 28px !important;
+}
+
+#loginScreen h2 {
+    color: var(--ui-green-950) !important;
+    font-size: 1.35rem !important;
+}
+
+#loginScreen p {
+    color: var(--ui-muted) !important;
+    font-size: 0.86rem !important;
+}
+
+#teacherIdInput,
+#newStudentName {
+    min-height: 54px;
+    color: var(--ui-text) !important;
+    background: #fbfdfc !important;
+    border: 1px solid var(--ui-line) !important;
+    border-radius: 14px !important;
+    box-shadow: none !important;
+}
+
+#teacherIdInput {
+    padding-inline: 48px 16px !important;
+    font-size: 1.1rem !important;
+}
+
+#teacherIdInput:focus,
+#newStudentName:focus {
+    border-color: var(--ui-green-800) !important;
+    box-shadow: 0 0 0 4px rgba(15, 104, 68, 0.09) !important;
+}
+
+#loginScreen button,
+#saveBtn {
+    min-height: 54px;
+    border-radius: 14px !important;
+    background: linear-gradient(135deg, var(--ui-green-900), var(--ui-green-800)) !important;
+    box-shadow: 0 12px 24px rgba(10, 74, 51, 0.2) !important;
+}
+
+#loginScreen button:hover,
+#saveBtn:hover {
+    transform: translateY(-1px);
+}
+
+#dashboardScreen {
+    width: 100%;
+    margin-bottom: 24px !important;
+}
+
+#dashboardScreen > .glass-card {
+    padding: 20px !important;
+    border-radius: 22px !important;
+    box-shadow: 0 14px 38px rgba(6, 47, 35, 0.09) !important;
+}
+
+#dashboardScreen > .glass-card:first-child {
+    border-top: 4px solid var(--ui-green-800) !important;
+}
+
+#teacherNameDisplay {
+    color: var(--ui-green-950);
+}
+
+#classNameDisplay {
+    color: var(--ui-pink-700);
+}
+
+#dashboardScreen button[title="تعديل الاسم"],
+#dashboardScreen button[title="تعديل الفصل"] {
+    width: 30px;
+    height: 30px;
+    display: inline-grid;
+    place-items: center;
+    border-radius: 9px;
+    background: var(--ui-green-50);
+}
+
+#dashboardScreen button[title="مزامنة البيانات"],
+#dashboardScreen button[title="تسجيل الخروج"] {
+    width: 44px !important;
+    height: 44px !important;
+    border-radius: 13px !important;
+}
+
+#dashboardScreen button[title="مزامنة البيانات"] {
+    color: var(--ui-green-800) !important;
+    background: var(--ui-green-50) !important;
+}
+
+#dashboardScreen button[title="تسجيل الخروج"] {
+    color: var(--ui-red) !important;
+    background: #fff1f0 !important;
+}
+
+#newStudentName + button {
+    min-width: 92px;
+    min-height: 50px;
+    padding-inline: 20px !important;
+    color: #fff !important;
+    background: var(--ui-pink-700) !important;
+    border-radius: 13px !important;
+    box-shadow: 0 9px 18px rgba(167, 15, 85, 0.17) !important;
+}
+
+#studentsListContainer {
+    max-height: min(52vh, 520px) !important;
+    padding: 2px !important;
+    scrollbar-width: thin;
+    scrollbar-color: #b9cec3 transparent;
+}
+
+#studentsListContainer > div {
+    min-height: 64px;
+    gap: 12px;
+    padding: 10px 12px !important;
+    background: #fff !important;
+    border: 1px solid var(--ui-line) !important;
+    border-radius: 15px !important;
+    box-shadow: 0 5px 14px rgba(6, 47, 35, 0.045) !important;
+}
+
+#studentsListContainer > div > span {
+    min-width: 0;
+    color: var(--ui-green-950) !important;
+    font-size: 0.93rem !important;
+    line-height: 1.35;
+}
+
+#studentsListContainer > div > div {
+    gap: 8px !important;
+}
+
+#studentsListContainer > div > div > div {
+    padding: 3px !important;
+    background: #f4f7f5 !important;
+    border: 1px solid #e7eee9;
+    border-radius: 11px !important;
+}
+
+#studentsListContainer input + span {
+    min-width: 54px;
+    padding: 7px 9px !important;
+    border-radius: 8px !important;
+    color: var(--ui-muted) !important;
+    font-size: 0.76rem !important;
+    text-align: center;
+}
+
+#studentsListContainer input:checked + span {
+    color: #fff !important;
+}
+
+#studentsListContainer button {
+    flex: 0 0 34px;
+    width: 34px !important;
+    height: 34px !important;
+    color: var(--ui-red) !important;
+    background: #fff1f0 !important;
+}
+
+#saveBtn {
+    position: sticky;
+    bottom: max(10px, env(safe-area-inset-bottom));
+    z-index: 4;
+}
+
+#toast {
+    width: min(calc(100% - 28px), 520px);
+    justify-content: center;
+    border-radius: 14px !important;
+    font-size: 0.9rem;
+}
+
+footer {
+    padding: 16px 10px max(18px, env(safe-area-inset-bottom)) !important;
+}
+
+footer p {
+    margin: 0;
+}
+
+@media (max-width: 640px) {
+    main {
+        justify-content: flex-start;
+        padding-inline: 12px !important;
+        padding-top: max(16px, env(safe-area-inset-top)) !important;
+    }
+
+    main > .text-center {
+        margin-bottom: 14px !important;
+    }
+
+    main > .text-center > div {
+        width: 94px;
+        height: 86px;
+    }
+
+    img[alt="شعار غرس"] {
+        width: 88px !important;
+        height: 88px !important;
+        max-width: 88px !important;
+        max-height: 88px !important;
+    }
+
+    #loginScreen {
+        padding: 24px 18px !important;
+        border-radius: 24px !important;
+    }
+
+    #dashboardScreen {
+        gap: 13px !important;
+    }
+
+    #dashboardScreen > .glass-card {
+        padding: 15px !important;
+        border-radius: 18px !important;
+    }
+
+    #studentsListContainer > div {
+        align-items: stretch !important;
+        flex-direction: column !important;
+    }
+
+    #studentsListContainer > div > div {
+        width: 100%;
+        justify-content: space-between;
+    }
+
+    #studentsListContainer > div > div > div {
+        flex: 1;
+        justify-content: space-between;
+    }
+
+    #studentsListContainer label {
+        flex: 1;
+    }
+
+    #studentsListContainer input + span {
+        width: 100%;
+        min-width: 0;
+    }
+
+    #saveBtn {
+        margin-top: 16px !important;
+        font-size: 1rem !important;
+    }
+}
+
+@media (max-width: 390px) {
+    #dashboardScreen > .glass-card:first-child > div:first-child {
+        align-items: flex-start !important;
+        gap: 10px;
+    }
+
+    #dashboardScreen > .glass-card:first-child > div:first-child > div:first-child {
+        min-width: 0;
+    }
+
+    #newStudentName + button {
+        min-width: 78px;
+        padding-inline: 13px !important;
+    }
+
+    #studentsListContainer input + span {
+        padding-inline: 5px !important;
+        font-size: 0.72rem !important;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        scroll-behavior: auto !important;
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
