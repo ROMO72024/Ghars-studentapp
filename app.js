@@ -6,10 +6,10 @@
   const AUTH_STORAGE_KEY = "ghars.auth.v2";
   const QUEUE_STORAGE_KEY = "ghars.offline.queue.v2";
   const ATTENDANCE_STORAGE_PREFIX = "ghars.attendance.v2:";
-  const APP_VERSION = "2.2.0";
-  const EXPECTED_API_MAJOR = 2;
-  const LOGIN_TIMEOUT_MS = 12000;
-  const API_TIMEOUT_MS = 20000;
+  const APP_VERSION = "2.4.0";
+  const LOGIN_TIMEOUT_MS = 15000;
+  const API_TIMEOUT_MS = 15000;
+  const AUTO_SYNC_INTERVAL_MS = 20000;
   const STATUS_OPTIONS = [
     { value: "حاضر", className: "present" },
     { value: "مأذون", className: "excused" },
@@ -22,6 +22,8 @@
     currentDate: "",
     currentDateLabel: "",
     syncing: false,
+    syncPromise: null,
+    syncRetryTimer: null,
     editType: null,
     toastTimer: null,
     attendanceSaveTimer: null
@@ -68,10 +70,10 @@
 
     window.setInterval(() => {
       updateDateIfNeeded(false);
-      if (navigator.onLine && state.auth && pendingCount() > 0) {
+      if (navigator.onLine && state.auth && sendablePendingCount() > 0) {
         void syncOfflineQueue();
       }
-    }, 60000);
+    }, AUTO_SYNC_INTERVAL_MS);
   }
 
   function bindEvents() {
@@ -98,7 +100,7 @@
     window.addEventListener("online", () => {
       updateConnectionUI();
       if (state.auth) {
-        void syncOfflineQueue();
+        requestSyncSoon(150);
       }
     });
     window.addEventListener("offline", updateConnectionUI);
@@ -108,7 +110,7 @@
       } else {
         updateDateIfNeeded(false);
         updateConnectionUI();
-        if (navigator.onLine && state.auth && pendingCount() > 0) {
+        if (navigator.onLine && state.auth && sendablePendingCount() > 0) {
           void syncOfflineQueue();
         }
       }
@@ -129,12 +131,11 @@
     try {
       const codeHash = await hashTeacherCode(teacherCode);
       const cachedAuth = readCachedAuth();
-      if (cachedAuth && cachedAuth.idHash === codeHash && cachedAuth.sessionToken) {
+      if (cachedAuth && cachedAuth.idHash === codeHash) {
+        cachedAuth.teacherId = teacherCode;
+        cachedAuth.teacherKey = cachedAuth.teacherKey || teacherKeyFromHash(codeHash);
+        saveAuth(cachedAuth);
         openDashboard(cachedAuth, !navigator.onLine);
-        enqueueOperation(
-          { action: "record_login", occurredAt: new Date().toISOString() },
-          "login"
-        );
         elements.teacherCode.value = "";
 
         if (navigator.onLine) {
@@ -154,7 +155,7 @@
       }
 
       const response = await apiLogin(teacherCode);
-      const auth = authFromLoginResponse(response, codeHash);
+      const auth = authFromLoginResponse(response, codeHash, teacherCode);
       saveAuth(auth);
       openDashboard(auth, false);
       elements.teacherCode.value = "";
@@ -169,7 +170,7 @@
   async function refreshSessionFromCode(teacherCode, codeHash, activeTeacherKey) {
     try {
       const response = await apiLogin(teacherCode);
-      let freshAuth = authFromLoginResponse(response, codeHash);
+      let freshAuth = authFromLoginResponse(response, codeHash, teacherCode);
       if (!state.auth || state.auth.teacherKey !== activeTeacherKey) return;
       if (freshAuth.teacherKey !== activeTeacherKey) {
         throw new ApiError("تعذر مطابقة الحساب المحفوظ مع الخادم.", "INVALID_SESSION");
@@ -185,16 +186,6 @@
       void syncOfflineQueue();
     } catch (error) {
       if (!state.auth || state.auth.teacherKey !== activeTeacherKey) return;
-      if (error instanceof ApiError && error.code === "BACKEND_VERSION_MISMATCH") {
-        localStorage.removeItem(AUTH_STORAGE_KEY);
-        showLoginView(error.message);
-        return;
-      }
-      if (isSessionError(error)) {
-        localStorage.removeItem(AUTH_STORAGE_KEY);
-        showLoginView("انتهت الجلسة. سجّلي الدخول بالإنترنت من جديد؛ البيانات المحفوظة لن تُحذف.");
-        return;
-      }
       // عند ضعف الشبكة تبقى الجلسة المحلية والعمليات المعلّقة محفوظة، وتُعاد المحاولة تلقائياً.
       updateSyncStatus();
     }
@@ -218,43 +209,49 @@
   }
 
   async function apiLogin(teacherCode) {
-    const response = await fetchWithTimeout(GAS_URL, {
-      method: "POST",
+    const url = `${GAS_URL}?action=login&teacherId=${encodeURIComponent(teacherCode)}`;
+    const response = await fetchWithTimeout(url, {
+      method: "GET",
       cache: "no-store",
-      redirect: "follow",
-      headers: { "Content-Type": "text/plain;charset=UTF-8" },
-      body: JSON.stringify({ action: "login", teacherId: teacherCode })
+      redirect: "follow"
     }, LOGIN_TIMEOUT_MS);
     return parseApiResponse(response);
   }
 
   async function apiPost(payload) {
-    if (!state.auth || !state.auth.sessionToken) {
-      throw new ApiError("الجلسة غير متاحة. سجّلي الدخول من جديد.", "INVALID_SESSION");
-    }
-
     const response = await fetchWithTimeout(GAS_URL, {
       method: "POST",
       redirect: "follow",
       cache: "no-store",
       headers: { "Content-Type": "text/plain;charset=UTF-8" },
-      body: JSON.stringify({ ...payload, sessionToken: state.auth.sessionToken })
+      body: JSON.stringify(payload)
     }, API_TIMEOUT_MS);
     return parseApiResponse(response);
   }
 
   async function fetchWithTimeout(url, options, timeoutMs) {
     const controller = new AbortController();
-    const timeoutId = window.setTimeout(() => controller.abort(), timeoutMs);
+    let timeoutId;
+    const deadline = new Promise((_, reject) => {
+      timeoutId = window.setTimeout(() => {
+        controller.abort();
+        reject(new TypeError("انتهت مهلة الاتصال. بقيت العملية محفوظة وستُعاد تلقائياً."));
+      }, timeoutMs);
+    });
     try {
-      return await fetch(url, { ...options, signal: controller.signal });
+      return await Promise.race([
+        fetch(url, { ...options, signal: controller.signal }),
+        deadline
+      ]);
     } catch (error) {
       if (error && error.name === "AbortError") {
-        throw new TypeError("استغرق الاتصال بالخادم وقتاً أطول من المتوقع. حاولي مرة أخرى.", { cause: error });
+        throw new TypeError("انتهت مهلة الاتصال. حاولي مرة أخرى.", { cause: error });
       }
+      if (error instanceof TypeError && String(error.message || "").includes("مهلة الاتصال")) throw error;
       throw new TypeError("تعذر الوصول إلى الخادم. تحققي من الإنترنت وحاولي مجدداً.", { cause: error });
     } finally {
       window.clearTimeout(timeoutId);
+      controller.abort();
     }
   }
 
@@ -270,11 +267,8 @@
       throw new TypeError("وصل رد غير صالح من الخدمة.", { cause: error });
     }
 
-    if (data && (data.code === "UNKNOWN_ACTION" || String(data.message || "").includes("العملية المطلوبة غير معروفة"))) {
-      throw new ApiError(
-        "نسخة Apps Script المنشورة قديمة. من «إدارة عمليات النشر» اختاري القلم ثم «إصدار جديد» وانشريه على الرابط نفسه.",
-        "BACKEND_VERSION_MISMATCH"
-      );
+    if (data && data.fastLogin && data.success === false) {
+      throw new ApiError("كود المعلمة غير صحيح.", "INVALID_LOGIN");
     }
     if (!data || data.status === "error" || data.success === false) {
       throw new ApiError(data && data.message ? data.message : "لم تُنفّذ العملية.", data && data.code);
@@ -282,21 +276,14 @@
     return data;
   }
 
-  function authFromLoginResponse(response, idHash) {
-    const apiMajor = Number.parseInt(String(response.apiVersion || "0").split(".")[0], 10);
-    if (apiMajor !== EXPECTED_API_MAJOR) {
-      throw new ApiError(
-        "نسخة Apps Script المنشورة لا توافق التطبيق. حدّث عملية النشر الحالية إلى إصدار جديد.",
-        "BACKEND_VERSION_MISMATCH"
-      );
-    }
-    if (!response.sessionToken || !response.teacherKey || !response.teacherName || !response.className) {
+  function authFromLoginResponse(response, idHash, teacherId) {
+    if (!response.fastLogin || response.success !== true || !response.teacherName || !response.className) {
       throw new ApiError("بيانات تسجيل الدخول غير مكتملة.", "INVALID_LOGIN_RESPONSE");
     }
     return {
       idHash,
-      teacherKey: String(response.teacherKey),
-      sessionToken: String(response.sessionToken),
+      teacherId: String(teacherId),
+      teacherKey: teacherKeyFromHash(idHash),
       teacherName: String(response.teacherName),
       className: String(response.className),
       students: normalizeStudentList(response.students),
@@ -306,7 +293,7 @@
 
   function readCachedAuth() {
     const cached = readJson(AUTH_STORAGE_KEY, null);
-    if (!cached || typeof cached !== "object" || !cached.teacherKey || !cached.sessionToken) {
+    if (!cached || typeof cached !== "object" || !cached.idHash || !cached.teacherName || !cached.className) {
       return null;
     }
     cached.students = normalizeStudentList(cached.students);
@@ -323,6 +310,7 @@
 
   function openDashboard(auth, offlineLogin) {
     state.auth = auth;
+    migrateOriginalQueue();
     elements.loginView.hidden = true;
     elements.dashboardView.hidden = false;
     applyIdentityToUI();
@@ -513,29 +501,36 @@
 
     const records = state.auth.students.map((studentName) => ({
       studentName,
+      className: state.auth.className,
       date: state.currentDate,
-      status: state.statuses[studentName] || "حاضر"
+      status: state.statuses[studentName] || "حاضر",
+      teacherName: state.auth.teacherName
     }));
     const payload = { action: "batch_attendance", records };
-    setButtonLoading(elements.submitAttendanceButton, true);
+    flushAttendanceSave();
+    const queuedItem = enqueueOperation(payload, `attendance:${state.currentDate}`);
 
-    try {
-      if (navigator.onLine) {
-        try {
-          await apiPost(payload);
-          removeCompactedQueueItem(`attendance:${state.currentDate}`);
-          showToast("تم تسليم حضور اليوم بنجاح.");
-          updateSyncStatus();
-          return;
-        } catch (error) {
-          if (!isNetworkFailure(error)) throw error;
-        }
-      }
-
-      enqueueOperation(payload, `attendance:${state.currentDate}`);
+    if (!navigator.onLine) {
       showToast("تم حفظ الحضور على الجهاز وسيُرسل تلقائياً عند عودة الإنترنت.");
+      return;
+    }
+
+    setButtonLoading(elements.submitAttendanceButton, true);
+    try {
+      await syncOfflineQueue();
+      if (!hasQueueItem(queuedItem.id)) {
+        showToast("تم تسليم حضور اليوم إلى قاعدة البيانات.");
+      } else {
+        const pendingItem = getQueueItem(queuedItem.id);
+        showToast(
+          pendingItem && pendingItem.lastError
+            ? pendingItem.lastError
+            : "لم يصل تأكيد التسليم بعد. بقيت البيانات محفوظة لإعادة الإرسال.",
+          true
+        );
+      }
     } catch (error) {
-      handleOperationError(error, "تعذر تسليم الحضور.");
+      showToast(friendlyError(error, "تعذر تأكيد التسليم. بقيت البيانات محفوظة للمزامنة."), true);
     } finally {
       setButtonLoading(elements.submitAttendanceButton, false);
     }
@@ -561,33 +556,21 @@
       return;
     }
 
-    setButtonLoading(elements.addSaveButton, true);
-    const payload = { action: "add_student", studentName };
+    const payload = { action: "add_student", className: state.auth.className, studentName };
     try {
-      if (navigator.onLine) {
-        try {
-          const response = await apiPost(payload);
-          applyServerState(response);
-          elements.addDialog.close();
-          showToast("تمت إضافة الطالب.");
-          return;
-        } catch (error) {
-          if (!isNetworkFailure(error)) throw error;
-        }
-      }
-
       state.auth.students.push(studentName);
       state.statuses[studentName] = "حاضر";
       saveAuth();
       saveAttendanceState();
-      enqueueOperation(payload);
+      enqueueOperation(payload, `student:${studentName}`);
       renderStudents();
       elements.addDialog.close();
-      showToast("أُضيف الطالب على الجهاز وسيُرسل تلقائياً عند عودة الإنترنت.");
+      showToast(navigator.onLine
+        ? "تم حفظ الإضافة، وجارٍ إرسالها في الخلفية."
+        : "أُضيف الطالب على الجهاز وسيُرسل تلقائياً عند عودة الإنترنت.");
+      if (navigator.onLine) requestSyncSoon(0);
     } catch (error) {
       showFormError(elements.addError, friendlyError(error, "تعذرت إضافة الطالب."));
-    } finally {
-      setButtonLoading(elements.addSaveButton, false);
     }
   }
 
@@ -595,27 +578,19 @@
     const confirmed = window.confirm(`هل تريدين حذف «${studentName}» من قائمة الصف؟`);
     if (!confirmed) return;
     button.disabled = true;
-    const payload = { action: "delete_student", studentName };
+    const payload = { action: "delete_student", className: state.auth.className, studentName };
 
     try {
-      if (navigator.onLine) {
-        try {
-          const response = await apiPost(payload);
-          applyServerState(response);
-          showToast("تم حذف الطالب من قائمة الصف.");
-          return;
-        } catch (error) {
-          if (!isNetworkFailure(error)) throw error;
-        }
-      }
-
       state.auth.students = state.auth.students.filter((name) => name !== studentName);
       delete state.statuses[studentName];
       saveAuth();
       saveAttendanceState();
-      enqueueOperation(payload);
+      enqueueOperation(payload, `student:${studentName}`);
       renderStudents();
-      showToast("تم الحذف على الجهاز وسيُرسل تلقائياً عند عودة الإنترنت.");
+      showToast(navigator.onLine
+        ? "تم حفظ الحذف، وجارٍ إرساله في الخلفية."
+        : "تم الحذف على الجهاز وسيُرسل تلقائياً عند عودة الإنترنت.");
+      if (navigator.onLine) requestSyncSoon(0);
     } catch (error) {
       button.disabled = false;
       handleOperationError(error, "تعذر حذف الطالب.");
@@ -655,14 +630,30 @@
 
     setButtonLoading(elements.editSaveButton, true);
     try {
-      const response = await apiPost({
+      const queuedItem = enqueueOperation({
         action: "update_teacher_info",
         updateType: state.editType,
-        newValue
-      });
-      applyServerState(response);
-      elements.editDialog.close();
-      showToast("تم حفظ التعديل وتحديث الورقة والمجلد المرتبطين.");
+        oldValue: state.editType === "teacherName" ? state.auth.teacherName : state.auth.className,
+        newValue,
+        teacherId: state.auth.teacherId
+      }, `edit:${state.editType}`);
+      await syncOfflineQueue({ manual: true });
+      if (!hasQueueItem(queuedItem.id)) {
+        if (state.editType === "teacherName") state.auth.teacherName = newValue;
+        else state.auth.className = newValue;
+        saveAuth();
+        applyIdentityToUI();
+        elements.editDialog.close();
+        showToast("تم حفظ التعديل في قاعدة البيانات.");
+      } else {
+        const pendingItem = getQueueItem(queuedItem.id);
+        showFormError(
+          elements.editError,
+          pendingItem && pendingItem.lastError
+            ? pendingItem.lastError
+            : "لم يصل تأكيد الحفظ بعد. يمكنك المحاولة من زر المزامنة."
+        );
+      }
     } catch (error) {
       showFormError(elements.editError, friendlyError(error, "تعذر حفظ التعديل."));
     } finally {
@@ -739,88 +730,149 @@
   }
 
   function enqueueOperation(payload, compactKey = "") {
-    if (!state.auth) return;
+    if (!state.auth) return null;
     let queue = readQueue();
     if (compactKey) {
       queue = queue.filter((item) => !(item.teacherKey === state.auth.teacherKey && item.compactKey === compactKey));
     }
-    queue.push({
+    const item = {
       id: createOperationId(),
       teacherKey: state.auth.teacherKey,
       compactKey,
       payload,
       createdAt: new Date().toISOString(),
       attempts: 0,
-      lastError: ""
-    });
+      lastError: "",
+      blocked: false
+    };
+    queue.push(item);
     writeQueue(queue);
-    updateSyncStatus();
+    return item;
   }
 
-  function removeCompactedQueueItem(compactKey) {
+  function getQueueItem(id) {
+    return readQueue().find((item) => item.id === id) || null;
+  }
+
+  function hasQueueItem(id) {
+    return Boolean(getQueueItem(id));
+  }
+
+  function requestSyncSoon(delayMs = 0) {
+    if (!navigator.onLine || !state.auth) return;
+    window.clearTimeout(state.syncRetryTimer);
+    state.syncRetryTimer = window.setTimeout(() => {
+      state.syncRetryTimer = null;
+      void syncOfflineQueue();
+    }, Math.max(0, Number(delayMs) || 0));
+  }
+
+  function unblockTeacherQueue() {
     if (!state.auth) return;
-    const queue = readQueue().filter((item) => !(
-      item.teacherKey === state.auth.teacherKey && item.compactKey === compactKey
-    ));
-    writeQueue(queue);
+    const queue = readQueue();
+    let changed = false;
+    queue.forEach((item) => {
+      if (item.teacherKey === state.auth.teacherKey && item.blocked) {
+        item.blocked = false;
+        changed = true;
+      }
+    });
+    if (changed) writeQueue(queue);
   }
 
-  async function syncOfflineQueue() {
-    if (!navigator.onLine || !state.auth || state.syncing) return;
+  async function syncOfflineQueue(options = {}) {
+    if (!navigator.onLine || !state.auth) {
+      return { syncedCount: 0, retryDelay: 0 };
+    }
+    if (options.manual) unblockTeacherQueue();
+    if (state.syncPromise) return state.syncPromise;
+
     state.syncing = true;
     updateSyncStatus();
-    let syncedCount = 0;
 
+    let outcome = null;
+    const running = runQueueSync();
+    state.syncPromise = running;
     try {
-      while (navigator.onLine && state.auth) {
-        const queue = readQueue();
-        const item = queue.find((entry) => entry.teacherKey === state.auth.teacherKey);
-        if (!item) break;
-
-        try {
-          const response = await apiPost(item.payload);
-          const latestQueue = readQueue().filter((entry) => entry.id !== item.id);
-          writeQueue(latestQueue);
-          applyServerState(response);
-          syncedCount++;
-        } catch (error) {
-          const latestQueue = readQueue();
-          const failed = latestQueue.find((entry) => entry.id === item.id);
-          if (failed) {
-            failed.attempts = Number(failed.attempts || 0) + 1;
-            failed.lastError = friendlyError(error, "تعذرت المزامنة.");
-            writeQueue(latestQueue);
-          }
-
-          if (isSessionError(error)) {
-            localStorage.removeItem(AUTH_STORAGE_KEY);
-            showLoginView("انتهت الجلسة. سجّلي الدخول بالإنترنت لإرسال البيانات المحفوظة.");
-          } else if (!isNetworkFailure(error)) {
-            showToast(friendlyError(error, "تعذرت مزامنة إحدى العمليات، وبقيت محفوظة على الجهاز."), true);
-          }
-          break;
-        }
-      }
-
-      if (syncedCount > 0 && state.auth && navigator.onLine && pendingCount() === 0) {
-        try {
-          const profile = await apiPost({ action: "get_profile" });
-          applyServerState(profile);
-        } catch (error) {
-          if (isSessionError(error)) {
-            localStorage.removeItem(AUTH_STORAGE_KEY);
-            showLoginView("انتهت الجلسة. سجّلي الدخول من جديد.");
-          }
-        }
-      }
-
-      if (syncedCount > 0 && state.auth && pendingCount() === 0) {
-        showToast("اكتملت مزامنة البيانات المحفوظة.");
-      }
+      outcome = await running;
+      return outcome;
     } finally {
       state.syncing = false;
+      state.syncPromise = null;
       updateSyncStatus();
+      if (outcome && outcome.retryDelay > 0 && navigator.onLine && state.auth && sendablePendingCount() > 0) {
+        requestSyncSoon(outcome.retryDelay);
+      }
     }
+  }
+
+  async function runQueueSync() {
+    let syncedCount = 0;
+    let retryDelay = 0;
+
+    while (navigator.onLine && state.auth) {
+      const item = readQueue()
+        .find((entry) => entry.teacherKey === state.auth.teacherKey && !entry.blocked);
+      if (!item) break;
+
+      try {
+        const response = await apiPost(payloadForFastBackend(item.payload));
+        writeQueue(readQueue().filter((entry) => entry.id !== item.id));
+        applyServerState(response);
+        syncedCount++;
+      } catch (error) {
+        const retryable = isNetworkFailure(error) || String(error && error.message || "").includes("مشغول");
+        markBatchFailed([item], error, !retryable);
+        if (retryable) {
+          retryDelay = 5000;
+        } else {
+          showToast(friendlyError(error, "تعذرت المزامنة، وبقيت العمليات محفوظة على الجهاز."), true);
+        }
+        break;
+      }
+    }
+
+    return { syncedCount, retryDelay };
+  }
+
+  function payloadForFastBackend(payload) {
+    const source = payload && typeof payload === "object" ? payload : {};
+    if (source.action === "batch_attendance") {
+      return {
+        action: "batch_attendance",
+        records: Array.isArray(source.records) ? source.records.map((record) => ({
+          ...record,
+          className: state.auth.className,
+          teacherName: state.auth.teacherName
+        })) : []
+      };
+    }
+    if (source.action === "add_student" || source.action === "delete_student") {
+      return { ...source, className: state.auth.className };
+    }
+    if (source.action === "update_teacher_info") {
+      const oldValue = source.updateType === "teacherName"
+        ? state.auth.teacherName
+        : state.auth.className;
+      return {
+        ...source,
+        teacherId: source.teacherId || state.auth.teacherId,
+        oldValue: source.oldValue || oldValue
+      };
+    }
+    return source;
+  }
+
+  function markBatchFailed(batch, error, blocked) {
+    const ids = new Set(batch.map((item) => item.id));
+    const queue = readQueue();
+    queue.forEach((item) => {
+      if (!ids.has(item.id)) return;
+      item.attempts = Number(item.attempts || 0) + 1;
+      item.lastError = friendlyError(error, "تعذرت المزامنة.");
+      item.blocked = Boolean(blocked);
+    });
+    writeQueue(queue);
   }
 
   async function handleManualSync() {
@@ -833,29 +885,32 @@
       showToast("المزامنة جارية بالفعل.");
       return;
     }
-
-    if (pendingCount() > 0) {
-      await syncOfflineQueue();
+    if (pendingCount() === 0) {
+      showToast("لا توجد عمليات مزامنة معلقة.");
       return;
     }
 
-    state.syncing = true;
-    updateSyncStatus();
     try {
-      const profile = await apiPost({ action: "get_profile" });
-      applyServerState(profile);
-      showToast("البيانات متزامنة مع الخادم.");
+      await syncOfflineQueue({ manual: true });
+      if (!state.auth) return;
+      if (pendingCount() === 0) {
+        showToast("اكتملت مزامنة جميع العمليات.");
+      } else {
+        showToast(pendingStatusText(pendingCount(), true), true);
+      }
     } catch (error) {
-      handleOperationError(error, "تعذرت المزامنة اليدوية.");
-    } finally {
-      state.syncing = false;
-      updateSyncStatus();
+      showToast(friendlyError(error, "تعذرت المزامنة اليدوية."), true);
     }
   }
 
   function readQueue() {
     const queue = readJson(QUEUE_STORAGE_KEY, []);
-    return Array.isArray(queue) ? queue : [];
+    if (!Array.isArray(queue)) return [];
+    const cleaned = queue.filter((item) => item && item.payload && item.payload.action !== "record_login");
+    if (cleaned.length !== queue.length) {
+      localStorage.setItem(QUEUE_STORAGE_KEY, JSON.stringify(cleaned));
+    }
+    return cleaned;
   }
 
   function writeQueue(queue) {
@@ -868,14 +923,34 @@
     return readQueue().filter((item) => item.teacherKey === state.auth.teacherKey).length;
   }
 
+  function sendablePendingCount() {
+    if (!state.auth) return 0;
+    return readQueue().filter((item) => item.teacherKey === state.auth.teacherKey && !item.blocked).length;
+  }
+
+  function blockedPendingCount() {
+    if (!state.auth) return 0;
+    return readQueue().filter((item) => item.teacherKey === state.auth.teacherKey && item.blocked).length;
+  }
+
+  function pendingStatusText(count, needsRetry = false) {
+    let text;
+    if (count === 1) text = "عملية مزامنة معلقة";
+    else if (count === 2) text = "عمليتا مزامنة معلقتان";
+    else text = `${count} عمليات مزامنة معلقة`;
+    return needsRetry ? `${text} — اضغطي «مزامنة الآن»` : text;
+  }
+
   function updateSyncStatus() {
     if (!elements.syncStatus || !state.auth) return;
     const count = pendingCount();
     elements.syncStatus.classList.toggle("has-pending", count > 0 || !navigator.onLine || state.syncing);
     if (state.syncing) {
-      elements.syncStatusText.textContent = "جاري الإرسال…";
+      elements.syncStatusText.textContent = count > 0
+        ? `جاري الإرسال — ${pendingStatusText(count)}`
+        : "جاري تأكيد المزامنة…";
     } else if (count > 0) {
-      elements.syncStatusText.textContent = `${count} بانتظار المزامنة`;
+      elements.syncStatusText.textContent = pendingStatusText(count, blockedPendingCount() > 0);
     } else if (!navigator.onLine) {
       elements.syncStatusText.textContent = "محفوظ على الجهاز";
     } else {
@@ -973,6 +1048,50 @@
     return Array.from(new Uint8Array(digest))
       .map((byte) => byte.toString(16).padStart(2, "0"))
       .join("");
+  }
+
+  function teacherKeyFromHash(hexHash) {
+    const pairs = String(hexHash || "").match(/.{1,2}/g) || [];
+    const binary = pairs.map((pair) => String.fromCharCode(Number.parseInt(pair, 16))).join("");
+    return window.btoa(binary).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/g, "");
+  }
+
+  function migrateOriginalQueue() {
+    if (!state.auth) return;
+    const original = readJson("ghars_offline_queue", []);
+    if (!Array.isArray(original) || original.length === 0) return;
+
+    const queue = readQueue();
+    const remaining = [];
+    original.forEach((payload) => {
+      if (!payload || typeof payload !== "object") return;
+      const payloadClass = payload.className || (
+        Array.isArray(payload.records) && payload.records[0] ? payload.records[0].className : ""
+      );
+      const belongsToTeacher = payload.teacherId
+        ? String(payload.teacherId) === String(state.auth.teacherId)
+        : String(payloadClass || "") === String(state.auth.className);
+      if (!belongsToTeacher) {
+        remaining.push(payload);
+        return;
+      }
+      queue.push({
+        id: createOperationId(),
+        teacherKey: state.auth.teacherKey,
+        compactKey: "",
+        payload,
+        createdAt: new Date().toISOString(),
+        attempts: 0,
+        lastError: "",
+        blocked: false
+      });
+    });
+    if (remaining.length > 0) {
+      localStorage.setItem("ghars_offline_queue", JSON.stringify(remaining));
+    } else {
+      localStorage.removeItem("ghars_offline_queue");
+    }
+    writeQueue(queue);
   }
 
   function registerServiceWorker() {

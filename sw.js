@@ -1,12 +1,12 @@
 "use strict";
 
-const CACHE_NAME = "ghars-attendance-v14";
+const CACHE_NAME = "ghars-attendance-v16";
 const APP_SHELL = [
   "./",
   "./index.html",
-  "./styles.css?v=2.2.0",
-  "./app.js?v=2.2.0",
-  "./manifest.json?v=2.2.0",
+  "./styles.css?v=2.4.0",
+  "./app.js?v=2.4.0",
+  "./manifest.json?v=2.4.0",
   "./logo.png"
 ];
 
@@ -40,26 +40,30 @@ self.addEventListener("fetch", (event) => {
   if (url.origin !== self.location.origin) return;
 
   if (request.mode === "navigate") {
-    event.respondWith(networkFirst(request));
+    event.respondWith(appShellFirst(request, event));
     return;
   }
 
   event.respondWith(cacheFirstWithRefresh(request, event));
 });
 
-async function networkFirst(request) {
-  const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 4000);
-  try {
-    const response = await fetch(request, { signal: controller.signal });
-    const cache = await caches.open(CACHE_NAME);
-    cache.put(request, response.clone());
-    return response;
-  } catch (error) {
-    return (await caches.match(request)) || (await caches.match("./index.html"));
-  } finally {
-    clearTimeout(timeoutId);
+async function appShellFirst(request, event) {
+  const cached = (await caches.match("./index.html")) || (await caches.match(request));
+  const refresh = fetch(request, { cache: "no-store" })
+    .then(async (response) => {
+      if (response.ok) {
+        const cache = await caches.open(CACHE_NAME);
+        await cache.put("./index.html", response.clone());
+      }
+      return response;
+    })
+    .catch(() => null);
+
+  if (cached) {
+    event.waitUntil(refresh);
+    return cached;
   }
+  return (await refresh) || Response.error();
 }
 
 async function cacheFirstWithRefresh(request, event) {
