@@ -1,20 +1,20 @@
 {
-  "name": "نظام غرس للحضور والغياب",
+  "name": "تطبيق غرس للحضور",
   "short_name": "غرس",
-  "description": "تسجيل حضور وغياب الطلبة مع دعم العمل بلا إنترنت",
-  "lang": "ar",
-  "dir": "rtl",
-  "start_url": "./",
-  "scope": "./",
+  "start_url": "./index.html",
   "display": "standalone",
-  "background_color": "#f3f8f5",
-  "theme_color": "#0f5132",
+  "background_color": "#f0fdf4",
+  "theme_color": "#0f3d2e",
   "icons": [
     {
       "src": "logo.png",
-      "sizes": "256x256",
-      "type": "image/png",
-      "purpose": "any"
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "logo.png",
+      "sizes": "512x512",
+      "type": "image/png"
     }
   ]
 }
