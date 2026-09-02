@@ -1,12 +1,12 @@
 "use strict";
 
-const CACHE_NAME = "ghars-attendance-v16";
+const CACHE_NAME = "ghars-attendance-v17";
 const APP_SHELL = [
   "./",
   "./index.html",
-  "./styles.css?v=2.4.0",
-  "./app.js?v=2.4.0",
-  "./manifest.json?v=2.4.0",
+  "./styles.css?v=2.4.1",
+  "./app.js?v=2.4.1",
+  "./manifest.json?v=2.4.1",
   "./logo.png"
 ];
 

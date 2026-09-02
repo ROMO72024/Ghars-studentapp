@@ -6,7 +6,7 @@
   const AUTH_STORAGE_KEY = "ghars.auth.v2";
   const QUEUE_STORAGE_KEY = "ghars.offline.queue.v2";
   const ATTENDANCE_STORAGE_PREFIX = "ghars.attendance.v2:";
-  const APP_VERSION = "2.4.0";
+  const APP_VERSION = "2.4.1";
   const LOGIN_TIMEOUT_MS = 15000;
   const API_TIMEOUT_MS = 15000;
   const AUTO_SYNC_INTERVAL_MS = 20000;
@@ -251,7 +251,6 @@
       throw new TypeError("تعذر الوصول إلى الخادم. تحققي من الإنترنت وحاولي مجدداً.", { cause: error });
     } finally {
       window.clearTimeout(timeoutId);
-      controller.abort();
     }
   }
 
