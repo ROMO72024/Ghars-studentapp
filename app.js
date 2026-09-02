@@ -2,7 +2,8 @@
 // محرك واجهة الحضور والغياب - غرس (نسخة بدون تقطيع)
 // ==========================================
 
-const GAS_URL = "ضع_رابط_جوجل_سكربت_الخاص_بك_هنا";
+// تم وضع الرابط الخاص بك هنا بنجاح
+const GAS_URL = "https://script.google.com/macros/s/AKfycbwTezSxIIkrM9d9Y0OFqq2BynFp6yhstSzg3DgKzHlJDnOlCMhJo2f8Hd7x63l66HKSvg/exec";
 
 let state = {
     teacherId: null,
@@ -235,10 +236,11 @@ function queueAction(action) {
     let q = JSON.parse(localStorage.getItem('ghars_q') || '[]');
     q.push(action);
     localStorage.setItem('ghars_q', JSON.stringify(q));
-    DOM.syncStatusText.innerText = "يوجد بيانات معلقة";
+    if(DOM.syncStatusText) DOM.syncStatusText.innerText = "يوجد بيانات معلقة";
 }
 
 function showToast(msg, type) {
-    DOM.toastRegion.innerHTML = `<div style="background: ${type==='success'?'#0f5132':'#856404'}; color: #fff; padding: 10px 20px; border-radius: 8px; margin-bottom: 10px;">${msg}</div>`;
+    if(!DOM.toastRegion) return;
+    DOM.toastRegion.innerHTML = `<div style="background: ${type==='success'?'#0f5132':'#856404'}; color: #fff; padding: 10px 20px; border-radius: 8px; margin-bottom: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">${msg}</div>`;
     setTimeout(() => DOM.toastRegion.innerHTML = '', 4000);
 }
