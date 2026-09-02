@@ -55,6 +55,7 @@ input {
 
 button {
   -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
 }
 
 button:focus-visible,
@@ -127,29 +128,19 @@ input:focus-visible {
 }
 
 .brand-mark {
-  position: relative;
-  width: 112px;
-  height: 112px;
+  width: 132px;
+  height: 118px;
   display: grid;
   place-items: center;
-  margin: 0 auto 1.25rem;
+  margin: 0 auto 0.9rem;
 }
 
 .brand-mark img {
-  position: relative;
-  z-index: 1;
-  width: 96px;
-  height: 96px;
+  display: block;
+  width: 118px;
+  height: 118px;
   object-fit: contain;
-  filter: drop-shadow(0 10px 16px rgba(8, 47, 35, 0.14));
-}
-
-.brand-ring {
-  position: absolute;
-  inset: 0;
-  border: 1px solid rgba(20, 108, 67, 0.19);
-  border-radius: 36px 58px 42px 54px;
-  transform: rotate(8deg);
+  object-position: center;
 }
 
 .login-heading {
@@ -324,6 +315,14 @@ button:disabled {
   font-size: 0.78rem;
 }
 
+.version-badge {
+  margin: 0.45rem 0 0;
+  color: #87958f;
+  text-align: center;
+  font-size: 0.68rem;
+  font-weight: 700;
+}
+
 .connection-dot {
   width: 8px;
   height: 8px;
@@ -361,6 +360,7 @@ button:disabled {
   width: 48px;
   height: 48px;
   object-fit: contain;
+  border-radius: 13px;
 }
 
 .compact-brand h1 {
@@ -392,7 +392,7 @@ button:disabled {
 
 .identity-card,
 .date-card {
-  background: rgba(255, 255, 255, 0.96);
+  background: var(--surface);
   border: 1px solid var(--line);
   box-shadow: 0 9px 25px rgba(8, 47, 35, 0.06);
 }
@@ -489,6 +489,39 @@ button:disabled {
   box-shadow: none;
 }
 
+.sync-controls {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.45rem;
+}
+
+.manual-sync-button {
+  min-height: 34px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  padding: 0.36rem 0.62rem;
+  color: var(--green-800);
+  background: #fff;
+  border: 1px solid #cfe0d7;
+  border-radius: 999px;
+  cursor: pointer;
+  font-size: 0.72rem;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.manual-sync-button svg {
+  width: 0.95rem;
+  height: 0.95rem;
+}
+
+.manual-sync-button.is-syncing svg {
+  animation: spin 700ms linear infinite;
+}
+
 .section-heading {
   display: flex;
   align-items: flex-end;
@@ -535,8 +568,12 @@ button:disabled {
   padding: 0.85rem 0.95rem;
   background: var(--surface);
   border: 1px solid var(--line);
+  border-inline-start: 3px solid rgba(20, 108, 67, 0.5);
   border-radius: 15px;
   box-shadow: 0 5px 16px rgba(8, 47, 35, 0.045);
+  content-visibility: auto;
+  contain: layout style paint;
+  contain-intrinsic-size: 76px;
 }
 
 .student-identity {
@@ -813,6 +850,14 @@ button:disabled {
 }
 
 @media (max-width: 640px) {
+  body {
+    background: var(--canvas);
+  }
+
+  .background-shape {
+    display: none;
+  }
+
   .app-shell {
     padding-inline: 0.75rem;
   }
@@ -830,6 +875,8 @@ button:disabled {
   .student-card {
     grid-template-columns: 1fr;
     gap: 0.7rem;
+    box-shadow: 0 2px 8px rgba(8, 47, 35, 0.04);
+    contain-intrinsic-size: 132px;
   }
 
   .status-group {
@@ -838,6 +885,13 @@ button:disabled {
 
   .status-option label {
     min-width: 0;
+    transition: none;
+  }
+
+  .identity-card,
+  .date-card,
+  .submit-dock {
+    box-shadow: 0 4px 14px rgba(8, 47, 35, 0.07);
   }
 }
 
@@ -846,9 +900,15 @@ button:disabled {
     grid-template-columns: auto 1fr;
   }
 
-  .sync-status {
+  .sync-controls {
     grid-column: 1 / -1;
-    justify-self: stretch;
+    width: 100%;
+    justify-content: stretch;
+  }
+
+  .sync-status,
+  .manual-sync-button {
+    flex: 1 1 auto;
     justify-content: center;
   }
 

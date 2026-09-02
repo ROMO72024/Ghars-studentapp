@@ -6,6 +6,10 @@
   const AUTH_STORAGE_KEY = "ghars.auth.v2";
   const QUEUE_STORAGE_KEY = "ghars.offline.queue.v2";
   const ATTENDANCE_STORAGE_PREFIX = "ghars.attendance.v2:";
+  const APP_VERSION = "2.2.0";
+  const EXPECTED_API_MAJOR = 2;
+  const LOGIN_TIMEOUT_MS = 12000;
+  const API_TIMEOUT_MS = 20000;
   const STATUS_OPTIONS = [
     { value: "حاضر", className: "present" },
     { value: "مأذون", className: "excused" },
@@ -19,7 +23,8 @@
     currentDateLabel: "",
     syncing: false,
     editType: null,
-    toastTimer: null
+    toastTimer: null,
+    attendanceSaveTimer: null
   };
 
   const elements = {};
@@ -38,7 +43,7 @@
       "toggle-code", "login-button", "login-error", "login-connection-dot",
       "login-connection-text", "logout-button", "teacher-name", "class-name",
       "edit-teacher-button", "edit-class-button", "current-date-label", "sync-status",
-      "sync-status-text", "student-count", "add-student-button", "attendance-form",
+      "sync-status-text", "manual-sync-button", "student-count", "add-student-button", "attendance-form",
       "student-list", "empty-state", "completed-count", "submit-attendance-button",
       "edit-dialog", "edit-form", "edit-dialog-title", "edit-input-label", "edit-input",
       "edit-error", "edit-save-button", "add-dialog", "add-form", "new-student-name",
@@ -59,6 +64,7 @@
     updateConnectionUI();
     updateDateIfNeeded(true);
     registerServiceWorker();
+    document.documentElement.dataset.appVersion = APP_VERSION;
 
     window.setInterval(() => {
       updateDateIfNeeded(false);
@@ -78,6 +84,7 @@
     elements.editTeacherButton.addEventListener("click", () => openEditDialog("teacherName"));
     elements.editClassButton.addEventListener("click", () => openEditDialog("className"));
     elements.editForm.addEventListener("submit", handleEditSave);
+    elements.manualSyncButton.addEventListener("click", () => void handleManualSync());
 
     document.querySelectorAll("[data-close-dialog]").forEach((button) => {
       button.addEventListener("click", () => {
@@ -96,7 +103,9 @@
     });
     window.addEventListener("offline", updateConnectionUI);
     document.addEventListener("visibilitychange", () => {
-      if (!document.hidden) {
+      if (document.hidden) {
+        flushAttendanceSave();
+      } else {
         updateDateIfNeeded(false);
         updateConnectionUI();
         if (navigator.onLine && state.auth && pendingCount() > 0) {
@@ -119,37 +128,37 @@
     setButtonLoading(elements.loginButton, true);
     try {
       const codeHash = await hashTeacherCode(teacherCode);
-      if (navigator.onLine) {
-        try {
-          const response = await apiLogin(teacherCode);
-          const auth = authFromLoginResponse(response, codeHash);
-          saveAuth(auth);
-          openDashboard(auth, false);
-          elements.teacherCode.value = "";
-          void syncOfflineQueue();
-          return;
-        } catch (error) {
-          if (!isNetworkFailure(error)) {
-            throw error;
-          }
+      const cachedAuth = readCachedAuth();
+      if (cachedAuth && cachedAuth.idHash === codeHash && cachedAuth.sessionToken) {
+        openDashboard(cachedAuth, !navigator.onLine);
+        enqueueOperation(
+          { action: "record_login", occurredAt: new Date().toISOString() },
+          "login"
+        );
+        elements.teacherCode.value = "";
+
+        if (navigator.onLine) {
+          showToast("تم الدخول فوراً، وجارٍ تحديث بيانات الصف في الخلفية.");
+          void refreshSessionFromCode(teacherCode, codeHash, cachedAuth.teacherKey);
+        } else {
+          showToast("تم الدخول من النسخة المحفوظة. سيجري الإرسال تلقائياً عند عودة الإنترنت.");
         }
+        return;
       }
 
-      const cachedAuth = readCachedAuth();
-      if (!cachedAuth || cachedAuth.idHash !== codeHash || !cachedAuth.sessionToken) {
+      if (!navigator.onLine) {
         throw new ApiError(
           "لا توجد جلسة محفوظة لهذا الكود. يلزم الاتصال بالإنترنت مرة واحدة أولاً.",
           "NO_OFFLINE_SESSION"
         );
       }
 
-      openDashboard(cachedAuth, true);
-      enqueueOperation(
-        { action: "record_login", occurredAt: new Date().toISOString() },
-        "login"
-      );
+      const response = await apiLogin(teacherCode);
+      const auth = authFromLoginResponse(response, codeHash);
+      saveAuth(auth);
+      openDashboard(auth, false);
       elements.teacherCode.value = "";
-      showToast("تم الدخول من النسخة المحفوظة. سيجري التحديث تلقائياً عند عودة الإنترنت.");
+      void syncOfflineQueue();
     } catch (error) {
       showFormError(elements.loginError, friendlyError(error, "تعذر تسجيل الدخول."));
     } finally {
@@ -157,19 +166,65 @@
     }
   }
 
-  async function apiLogin(teacherCode) {
-    let response;
+  async function refreshSessionFromCode(teacherCode, codeHash, activeTeacherKey) {
     try {
-      response = await fetch(GAS_URL, {
-        method: "POST",
-        cache: "no-store",
-        redirect: "follow",
-        headers: { "Content-Type": "text/plain;charset=UTF-8" },
-        body: JSON.stringify({ action: "login", teacherId: teacherCode })
-      });
+      const response = await apiLogin(teacherCode);
+      let freshAuth = authFromLoginResponse(response, codeHash);
+      if (!state.auth || state.auth.teacherKey !== activeTeacherKey) return;
+      if (freshAuth.teacherKey !== activeTeacherKey) {
+        throw new ApiError("تعذر مطابقة الحساب المحفوظ مع الخادم.", "INVALID_SESSION");
+      }
+
+      freshAuth = replayQueuedRoster(freshAuth);
+      state.auth = freshAuth;
+      saveAuth();
+      applyIdentityToUI();
+      loadAttendanceState();
+      renderStudents();
+      updateConnectionUI();
+      void syncOfflineQueue();
     } catch (error) {
-      throw new TypeError("تعذر الوصول إلى الخادم.", { cause: error });
+      if (!state.auth || state.auth.teacherKey !== activeTeacherKey) return;
+      if (error instanceof ApiError && error.code === "BACKEND_VERSION_MISMATCH") {
+        localStorage.removeItem(AUTH_STORAGE_KEY);
+        showLoginView(error.message);
+        return;
+      }
+      if (isSessionError(error)) {
+        localStorage.removeItem(AUTH_STORAGE_KEY);
+        showLoginView("انتهت الجلسة. سجّلي الدخول بالإنترنت من جديد؛ البيانات المحفوظة لن تُحذف.");
+        return;
+      }
+      // عند ضعف الشبكة تبقى الجلسة المحلية والعمليات المعلّقة محفوظة، وتُعاد المحاولة تلقائياً.
+      updateSyncStatus();
     }
+  }
+
+  function replayQueuedRoster(auth) {
+    let students = normalizeStudentList(auth.students);
+    readQueue()
+      .filter((item) => item.teacherKey === auth.teacherKey)
+      .forEach((item) => {
+        const payload = item && item.payload ? item.payload : {};
+        const studentName = String(payload.studentName || "").trim();
+        if (payload.action === "add_student" && studentName && !students.includes(studentName)) {
+          students.push(studentName);
+        } else if (payload.action === "delete_student" && studentName) {
+          students = students.filter((name) => name !== studentName);
+        }
+      });
+    auth.students = students;
+    return auth;
+  }
+
+  async function apiLogin(teacherCode) {
+    const response = await fetchWithTimeout(GAS_URL, {
+      method: "POST",
+      cache: "no-store",
+      redirect: "follow",
+      headers: { "Content-Type": "text/plain;charset=UTF-8" },
+      body: JSON.stringify({ action: "login", teacherId: teacherCode })
+    }, LOGIN_TIMEOUT_MS);
     return parseApiResponse(response);
   }
 
@@ -178,19 +233,29 @@
       throw new ApiError("الجلسة غير متاحة. سجّلي الدخول من جديد.", "INVALID_SESSION");
     }
 
-    let response;
-    try {
-      response = await fetch(GAS_URL, {
-        method: "POST",
-        redirect: "follow",
-        cache: "no-store",
-        headers: { "Content-Type": "text/plain;charset=UTF-8" },
-        body: JSON.stringify({ ...payload, sessionToken: state.auth.sessionToken })
-      });
-    } catch (error) {
-      throw new TypeError("تعذر الوصول إلى الخادم.", { cause: error });
-    }
+    const response = await fetchWithTimeout(GAS_URL, {
+      method: "POST",
+      redirect: "follow",
+      cache: "no-store",
+      headers: { "Content-Type": "text/plain;charset=UTF-8" },
+      body: JSON.stringify({ ...payload, sessionToken: state.auth.sessionToken })
+    }, API_TIMEOUT_MS);
     return parseApiResponse(response);
+  }
+
+  async function fetchWithTimeout(url, options, timeoutMs) {
+    const controller = new AbortController();
+    const timeoutId = window.setTimeout(() => controller.abort(), timeoutMs);
+    try {
+      return await fetch(url, { ...options, signal: controller.signal });
+    } catch (error) {
+      if (error && error.name === "AbortError") {
+        throw new TypeError("استغرق الاتصال بالخادم وقتاً أطول من المتوقع. حاولي مرة أخرى.", { cause: error });
+      }
+      throw new TypeError("تعذر الوصول إلى الخادم. تحققي من الإنترنت وحاولي مجدداً.", { cause: error });
+    } finally {
+      window.clearTimeout(timeoutId);
+    }
   }
 
   async function parseApiResponse(response) {
@@ -205,6 +270,12 @@
       throw new TypeError("وصل رد غير صالح من الخدمة.", { cause: error });
     }
 
+    if (data && (data.code === "UNKNOWN_ACTION" || String(data.message || "").includes("العملية المطلوبة غير معروفة"))) {
+      throw new ApiError(
+        "نسخة Apps Script المنشورة قديمة. من «إدارة عمليات النشر» اختاري القلم ثم «إصدار جديد» وانشريه على الرابط نفسه.",
+        "BACKEND_VERSION_MISMATCH"
+      );
+    }
     if (!data || data.status === "error" || data.success === false) {
       throw new ApiError(data && data.message ? data.message : "لم تُنفّذ العملية.", data && data.code);
     }
@@ -212,6 +283,13 @@
   }
 
   function authFromLoginResponse(response, idHash) {
+    const apiMajor = Number.parseInt(String(response.apiVersion || "0").split(".")[0], 10);
+    if (apiMajor !== EXPECTED_API_MAJOR) {
+      throw new ApiError(
+        "نسخة Apps Script المنشورة لا توافق التطبيق. حدّث عملية النشر الحالية إلى إصدار جديد.",
+        "BACKEND_VERSION_MISMATCH"
+      );
+    }
     if (!response.sessionToken || !response.teacherKey || !response.teacherName || !response.className) {
       throw new ApiError("بيانات تسجيل الدخول غير مكتملة.", "INVALID_LOGIN_RESPONSE");
     }
@@ -404,7 +482,7 @@
       input.checked = state.statuses[studentName] === option.value;
       input.addEventListener("change", () => {
         state.statuses[studentName] = option.value;
-        saveAttendanceState();
+        scheduleAttendanceSave();
       });
       const label = document.createElement("label");
       label.htmlFor = input.id;
@@ -594,19 +672,56 @@
 
   function applyServerState(response) {
     if (!state.auth || !response) return;
+    let identityChanged = false;
+    let rosterChanged = false;
     if (typeof response.teacherName === "string" && response.teacherName) {
-      state.auth.teacherName = response.teacherName;
+      if (state.auth.teacherName !== response.teacherName) {
+        state.auth.teacherName = response.teacherName;
+        identityChanged = true;
+      }
     }
     if (typeof response.className === "string" && response.className) {
-      state.auth.className = response.className;
+      if (state.auth.className !== response.className) {
+        state.auth.className = response.className;
+        identityChanged = true;
+      }
     }
     if (Array.isArray(response.students)) {
-      state.auth.students = normalizeStudentList(response.students);
+      const nextStudents = normalizeStudentList(response.students);
+      if (!sameStringArray(state.auth.students, nextStudents)) {
+        state.auth.students = nextStudents;
+        rosterChanged = true;
+      }
+    }
+    if (!identityChanged && !rosterChanged) {
+      return;
     }
     saveAuth();
-    applyIdentityToUI();
-    loadAttendanceState();
-    renderStudents();
+    if (identityChanged) applyIdentityToUI();
+    if (rosterChanged) {
+      loadAttendanceState();
+      renderStudents();
+    }
+  }
+
+  function sameStringArray(left, right) {
+    if (!Array.isArray(left) || left.length !== right.length) return false;
+    return left.every((value, index) => value === right[index]);
+  }
+
+  function scheduleAttendanceSave() {
+    window.clearTimeout(state.attendanceSaveTimer);
+    state.attendanceSaveTimer = window.setTimeout(() => {
+      state.attendanceSaveTimer = null;
+      saveAttendanceState();
+    }, 180);
+  }
+
+  function flushAttendanceSave() {
+    if (!state.attendanceSaveTimer) return;
+    window.clearTimeout(state.attendanceSaveTimer);
+    state.attendanceSaveTimer = null;
+    saveAttendanceState();
   }
 
   function normalizeStudentList(students) {
@@ -708,6 +823,36 @@
     }
   }
 
+  async function handleManualSync() {
+    if (!state.auth) return;
+    if (!navigator.onLine) {
+      showToast("لا يوجد اتصال الآن. بياناتك محفوظة وستُرسل تلقائياً عند عودة الإنترنت.", true);
+      return;
+    }
+    if (state.syncing) {
+      showToast("المزامنة جارية بالفعل.");
+      return;
+    }
+
+    if (pendingCount() > 0) {
+      await syncOfflineQueue();
+      return;
+    }
+
+    state.syncing = true;
+    updateSyncStatus();
+    try {
+      const profile = await apiPost({ action: "get_profile" });
+      applyServerState(profile);
+      showToast("البيانات متزامنة مع الخادم.");
+    } catch (error) {
+      handleOperationError(error, "تعذرت المزامنة اليدوية.");
+    } finally {
+      state.syncing = false;
+      updateSyncStatus();
+    }
+  }
+
   function readQueue() {
     const queue = readJson(QUEUE_STORAGE_KEY, []);
     return Array.isArray(queue) ? queue : [];
@@ -735,6 +880,10 @@
       elements.syncStatusText.textContent = "محفوظ على الجهاز";
     } else {
       elements.syncStatusText.textContent = "متزامن";
+    }
+    if (elements.manualSyncButton) {
+      elements.manualSyncButton.disabled = state.syncing || !navigator.onLine;
+      elements.manualSyncButton.classList.toggle("is-syncing", state.syncing);
     }
   }
 
@@ -829,7 +978,7 @@
   function registerServiceWorker() {
     if (!("serviceWorker" in navigator)) return;
     window.addEventListener("load", () => {
-      navigator.serviceWorker.register("./sw.js").catch(() => {
+      navigator.serviceWorker.register("./sw.js", { updateViaCache: "none" }).catch(() => {
         // يبقى التطبيق عاملاً عبر الإنترنت حتى إن رفض المتصفح التسجيل.
       });
     });
