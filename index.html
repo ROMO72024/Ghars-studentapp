@@ -3,12 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#4A0F30">
+<meta name="theme-color" content="#0F5132">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <link rel="manifest" href="manifest.json">
-<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="logo.png">
 <title>الحضور والغياب — غرس</title>
 
 <style>
@@ -245,6 +245,7 @@ main{flex:1;padding:22px 12px 132px;max-width:640px;width:100%;margin-inline:aut
 
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
+<link rel="stylesheet" href="styles.css?v=4.0.0">
 </head>
 
 <body>
@@ -252,7 +253,7 @@ main{flex:1;padding:22px 12px 132px;max-width:640px;width:100%;margin-inline:aut
 <!-- ═══════════ تسجيل الدخول ═══════════ -->
 <section id="gate">
   <div class="gate-card torn on-card">
-    <div class="seal">غرس</div>
+    <div class="seal brand-logo"><img src="logo.png" alt="شعار غرس"></div>
     <h1 class="serif">مدرسة وروضة غرس الحديثة</h1>
     <p>سجل الحضور والغياب</p>
     <label for="code">رقم المعلمة</label>
@@ -266,7 +267,7 @@ main{flex:1;padding:22px 12px 132px;max-width:640px;width:100%;margin-inline:aut
 <!-- ═══════════ التطبيق ═══════════ -->
 <div id="app">
   <header class="top torn">
-    <div class="seal">غ</div>
+    <div class="seal top-logo"><img src="logo.png" alt="شعار غرس"></div>
     <div class="who">
       <b id="t-name"></b>
       <span id="t-class"></span>
@@ -324,13 +325,6 @@ main{flex:1;padding:22px 12px 132px;max-width:640px;width:100%;margin-inline:aut
   <div class="pair"><button class="go" id="do-ren">حفظ</button><button class="no" data-close>إلغاء</button></div>
 </div></div>
 
-<div class="veil" id="v-who"><div class="sheet">
-  <div class="grip"></div><h2 id="who-h"></h2>
-  <label id="who-l" for="i-who"></label>
-  <input id="i-who" type="text" autocomplete="off">
-  <div class="pair"><button class="go" id="do-who">حفظ</button><button class="no" data-close>إلغاء</button></div>
-</div></div>
-
 <div class="veil" id="v-row"><div class="sheet menu">
   <div class="grip"></div><h2 id="row-h"></h2>
   <button id="row-ren">تعديل الاسم</button>
@@ -341,8 +335,6 @@ main{flex:1;padding:22px 12px 132px;max-width:640px;width:100%;margin-inline:aut
 
 <div class="veil" id="v-menu"><div class="sheet menu">
   <div class="grip"></div><h2>خيارات</h2>
-  <button id="m-teacher">تعديل اسم المعلمة</button>
-  <button id="m-class">تعديل اسم الصف</button>
   <button id="m-pull">تحديث البيانات من الشيت</button>
   <hr>
   <button class="danger" id="m-out">تسجيل الخروج</button>
@@ -821,33 +813,6 @@ $("row-del").addEventListener("click", function(){
 
 /* ══════════ قائمة الخيارات ══════════ */
 $("btn-menu").addEventListener("click", function(){ open("v-menu"); });
-
-var whoMode="";
-$("m-teacher").addEventListener("click", function(){
-  whoMode="teacher"; shut("v-menu");
-  $("who-h").textContent="تعديل اسم المعلمة"; $("who-l").textContent="الاسم الجديد";
-  $("i-who").value=S.teacherName; open("v-who");
-});
-$("m-class").addEventListener("click", function(){
-  whoMode="class"; shut("v-menu");
-  $("who-h").textContent="تعديل اسم الصف"; $("who-l").textContent="اسم الصف الجديد";
-  $("i-who").value=S.className; open("v-who");
-});
-$("do-who").addEventListener("click", function(){
-  var v=$("i-who").value.trim();
-  if(!v) return;
-  shut("v-who");
-  if(whoMode==="teacher"){
-    if(v===S.teacherName) return;
-    S.teacherName=v; persist(); paintHeader();
-    push({ action:"rename_teacher", newName:v });
-  }else{
-    if(v===S.className) return;
-    S.className=v; persist(); paintHeader();
-    push({ action:"rename_class", newName:v });
-  }
-  toast("تم الحفظ", "good");
-});
 
 $("m-pull").addEventListener("click", function(){ shut("v-menu"); pull(true); });
 

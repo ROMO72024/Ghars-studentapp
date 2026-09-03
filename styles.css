@@ -1,0 +1,420 @@
+:root {
+  --paper: #f3f8f5;
+  --card: #ffffff;
+  --edge: #dce8e1;
+  --ink: #16362c;
+  --mute: #687a74;
+  --wine: #0f6844;
+  --wine-deep: #082f23;
+  --wine-soft: #edf8f2;
+  --leaf: #188038;
+  --leaf-wash: #e5f5eb;
+  --clay: #bd2c22;
+  --clay-wash: #feeceb;
+  --amber: #a46900;
+  --amber-wash: #fff3d5;
+  --magenta: #a31352;
+  --magenta-soft: #fce7f3;
+  --r: 18px;
+}
+
+body {
+  background:
+    radial-gradient(circle at 92% 0%, rgba(15, 104, 68, 0.13), transparent 31rem),
+    radial-gradient(circle at 0% 94%, rgba(163, 19, 82, 0.08), transparent 25rem),
+    var(--paper);
+  font-family: Tahoma, Arial, "Segoe UI", sans-serif;
+  color: var(--ink);
+  line-height: 1.55;
+}
+
+.serif {
+  font-family: Tahoma, Arial, "Segoe UI", sans-serif;
+}
+
+.torn::after {
+  display: none;
+}
+
+#gate {
+  padding: max(24px, env(safe-area-inset-top)) 16px max(24px, env(safe-area-inset-bottom));
+  background:
+    radial-gradient(circle at 100% 0%, rgba(15, 104, 68, 0.15), transparent 24rem),
+    radial-gradient(circle at 0% 100%, rgba(163, 19, 82, 0.09), transparent 23rem),
+    #f3f8f5;
+}
+
+.gate-card {
+  width: min(100%, 430px);
+  max-width: 430px;
+  padding: 34px 30px 30px;
+  background: rgba(255, 255, 255, 0.97);
+  border: 1px solid rgba(255, 255, 255, 0.9);
+  border-radius: 30px;
+  box-shadow: 0 24px 65px rgba(8, 47, 35, 0.14);
+}
+
+.seal.brand-logo {
+  width: 124px;
+  height: 118px;
+  margin: 0 auto 12px;
+  padding: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.brand-logo img {
+  display: block;
+  width: 118px;
+  height: 118px;
+  object-fit: contain;
+}
+
+.gate-card h1 {
+  color: var(--wine-deep);
+  font-size: clamp(1.35rem, 5vw, 1.8rem);
+  line-height: 1.35;
+}
+
+.gate-card p {
+  margin-top: 7px;
+  margin-bottom: 26px;
+  color: var(--magenta);
+  font-size: 0.93rem;
+  font-weight: 700;
+}
+
+.gate-card label {
+  color: var(--wine-deep);
+  font-size: 0.9rem;
+}
+
+#code {
+  min-height: 55px;
+  padding: 14px 16px;
+  color: var(--ink);
+  background: #fbfdfc;
+  border: 1px solid var(--edge);
+  border-radius: 14px;
+  box-shadow: inset 0 1px 2px rgba(8, 47, 35, 0.03);
+}
+
+#code:focus {
+  border-color: var(--wine);
+  box-shadow: 0 0 0 4px rgba(15, 104, 68, 0.09);
+}
+
+.btn-main {
+  min-height: 54px;
+  margin-top: 14px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #0f5132, #147247);
+  box-shadow: 0 11px 23px rgba(15, 81, 50, 0.22);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.btn-main:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 14px 27px rgba(15, 81, 50, 0.26);
+}
+
+.note {
+  border: 1px solid transparent;
+}
+
+.top {
+  min-height: 74px;
+  padding: max(11px, env(safe-area-inset-top)) 14px 11px;
+  color: var(--ink);
+  background: rgba(255, 255, 255, 0.96);
+  border-bottom: 1px solid var(--edge);
+  box-shadow: 0 7px 22px rgba(8, 47, 35, 0.07);
+  backdrop-filter: blur(12px);
+}
+
+.top .seal.top-logo {
+  width: 48px;
+  height: 48px;
+  padding: 0;
+  background: #fff;
+  border: 1px solid var(--edge);
+  border-radius: 14px;
+  box-shadow: none;
+  overflow: hidden;
+}
+
+.top-logo img {
+  width: 100%;
+  height: 100%;
+  padding: 4px;
+  object-fit: contain;
+}
+
+.who b {
+  color: var(--wine-deep);
+  font-size: 1rem;
+}
+
+.who span {
+  color: var(--magenta);
+  font-size: 0.79rem;
+  font-weight: 700;
+}
+
+.ico {
+  width: 42px;
+  height: 42px;
+  color: var(--wine);
+  background: var(--wine-soft);
+  border: 1px solid #dceee4;
+  border-radius: 12px;
+}
+
+.ico:active {
+  color: #fff;
+  background: var(--wine);
+}
+
+.wire {
+  position: sticky;
+  top: 74px;
+  z-index: 35;
+  min-height: 36px;
+  padding: 8px 16px;
+  border-bottom: 1px solid rgba(8, 47, 35, 0.05);
+}
+
+main {
+  max-width: 720px;
+  padding: 20px 14px 130px;
+}
+
+.day,
+.row {
+  background: rgba(255, 255, 255, 0.98);
+  border-color: var(--edge);
+  box-shadow: 0 8px 24px rgba(8, 47, 35, 0.055);
+}
+
+.day {
+  padding: 18px;
+  margin-bottom: 14px;
+  border-radius: 20px;
+  border-top: 4px solid var(--wine);
+}
+
+.day-h b {
+  color: var(--wine-deep);
+  font-size: 1.35rem;
+}
+
+.tally {
+  gap: 8px;
+}
+
+.tally div {
+  padding: 10px 5px;
+  border-radius: 12px;
+}
+
+#roster {
+  gap: 10px;
+}
+
+.row {
+  padding: 13px;
+  border-radius: 17px;
+  contain: layout paint;
+}
+
+.row-h {
+  margin-bottom: 11px;
+}
+
+.av {
+  width: 34px;
+  height: 34px;
+  border-radius: 11px;
+}
+
+.row-h .nm {
+  color: var(--wine-deep);
+  font-size: 0.96rem;
+  font-weight: 700;
+}
+
+.more {
+  width: 34px;
+  height: 34px;
+  color: var(--magenta);
+  background: var(--magenta-soft);
+  border-radius: 10px;
+}
+
+.stamps {
+  gap: 8px;
+}
+
+.stamps button {
+  min-height: 40px;
+  padding: 8px 4px;
+  border-color: var(--edge);
+  border-radius: 11px;
+  transition: transform 0.12s ease, background 0.12s ease;
+}
+
+.stamps .p.on,
+.stamps .a.on,
+.stamps .e.on {
+  transform: none;
+  box-shadow: 0 5px 12px rgba(8, 47, 35, 0.12);
+}
+
+.dock {
+  max-width: 720px;
+  padding: 11px 12px calc(11px + env(safe-area-inset-bottom));
+  background: rgba(255, 255, 255, 0.97);
+  box-shadow: 0 -12px 35px rgba(8, 47, 35, 0.08);
+  backdrop-filter: blur(12px);
+}
+
+.dock .side,
+.submit {
+  min-height: 48px;
+  border-radius: 13px;
+}
+
+.dock .side {
+  color: var(--magenta);
+  background: var(--magenta-soft);
+}
+
+.submit {
+  background: linear-gradient(135deg, #0f5132, #147247);
+  box-shadow: 0 8px 17px rgba(15, 81, 50, 0.18);
+}
+
+.submit.done {
+  color: var(--leaf);
+  background: var(--leaf-wash);
+  box-shadow: none;
+}
+
+.veil {
+  background: rgba(8, 47, 35, 0.46);
+  backdrop-filter: blur(3px);
+}
+
+.sheet {
+  max-width: 520px;
+  padding: 22px 19px calc(25px + env(safe-area-inset-bottom));
+  border-radius: 24px 24px 0 0;
+  box-shadow: 0 -20px 60px rgba(8, 47, 35, 0.18);
+}
+
+.sheet h2 {
+  color: var(--wine-deep);
+  font-size: 1.1rem;
+}
+
+.sheet input {
+  min-height: 52px;
+  background: #fbfdfc;
+  border-color: var(--edge);
+  border-radius: 13px;
+}
+
+.go,
+.no,
+.menu button {
+  min-height: 48px;
+  border-radius: 12px;
+}
+
+.go {
+  background: var(--wine);
+}
+
+.no {
+  color: var(--wine-deep);
+  background: var(--wine-soft);
+}
+
+.toast {
+  border-radius: 13px;
+  box-shadow: 0 12px 28px rgba(8, 47, 35, 0.2);
+}
+
+@media (max-width: 480px) {
+  .gate-card {
+    padding: 28px 20px 25px;
+    border-radius: 25px;
+  }
+
+  .seal.brand-logo {
+    width: 106px;
+    height: 100px;
+  }
+
+  .brand-logo img {
+    width: 100px;
+    height: 100px;
+  }
+
+  .top {
+    gap: 9px;
+  }
+
+  .top .seal.top-logo {
+    width: 43px;
+    height: 43px;
+  }
+
+  .ico {
+    width: 39px;
+    height: 39px;
+  }
+
+  main {
+    padding-inline: 10px;
+  }
+
+  .day {
+    padding: 15px;
+  }
+
+  .row {
+    padding: 11px;
+  }
+
+  .dock {
+    gap: 7px;
+  }
+
+  .dock .side {
+    padding-inline: 10px;
+    font-size: 0.79rem;
+  }
+
+  .submit {
+    font-size: 0.9rem;
+  }
+}
+
+@media (max-width: 365px) {
+  .dock .side:nth-child(2) {
+    display: none;
+  }
+
+  .stamps button {
+    font-size: 0.78rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

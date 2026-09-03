@@ -2,13 +2,13 @@
    يخزّن الواجهة على الجهاز لتفتح فوراً وبلا إنترنت.
    ⚠️ عند أي تعديل على index.html غيّر رقم النسخة هنا. */
 
-var VERSION = "ghars-v3.1.0";
+var VERSION = "ghars-v4.0.0";
 var SHELL = [
   "./",
   "./index.html",
   "./manifest.json",
-  "./icon-192.png",
-  "./icon-512.png"
+  "./styles.css?v=4.0.0",
+  "./logo.png"
 ];
 
 self.addEventListener("install", function (e) {
