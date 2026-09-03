@@ -2,54 +2,90 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>تطبيق الحضور والغياب | غرس</title>
-    
+
     <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#0f3d2e">
+    <meta name="theme-color" content="#0b3b2c">
     <link rel="icon" href="logo.png" type="image/png">
 
     <script src="tailwind.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap');
-        
+        @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap');
+
         :root {
-            --ghars-green: #0f3d2e;
+            --ghars-green: #0b3b2c;
+            --ghars-green2: #147a54;
             --ghars-magenta: #be185d;
-            --ghars-orange: #d97706; 
+            --ghars-gold: #d97706;
         }
-        body { 
-            font-family: 'Tajawal', sans-serif; 
-            background-color: #f0fdf4;
+        body {
+            font-family: 'Tajawal', sans-serif;
+            background-color: #eef7f1;
             overflow-x: hidden;
         }
         img[alt="شعار غرس"] {
-            width: 80px !important;
-            height: 80px !important;
-            max-width: 80px !important;
-            max-height: 80px !important;
+            width: 84px !important;
+            height: 84px !important;
+            max-width: 84px !important;
+            max-height: 84px !important;
             object-fit: cover !important;
         }
         .hidden-screen { display: none !important; }
         .glass-card {
-            background: rgba(255, 255, 255, 0.85);
+            background: rgba(255, 255, 255, 0.92);
             backdrop-filter: blur(16px);
-            border: 1px solid rgba(255, 255, 255, 0.6);
-            box-shadow: 0 15px 35px rgba(15, 61, 46, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.7);
+            box-shadow: 0 18px 40px rgba(11, 59, 44, 0.10);
         }
-        .blob-1 { background: var(--ghars-magenta); animation: blob 8s infinite alternate; }
-        .blob-2 { background: var(--ghars-green); animation: blob 8s infinite alternate-reverse 2s; }
-        .blob-3 { background: #34d399; animation: blob 8s infinite alternate 4s; }
+        .hero-ring {
+            background: conic-gradient(from 180deg, #0b3b2c, #147a54, #be185d, #0b3b2c);
+            padding: 3px;
+            border-radius: 28px;
+        }
+        .hero-inner {
+            background: #fff;
+            border-radius: 26px;
+        }
+        .blob-1 { background: var(--ghars-magenta); animation: blob 9s infinite alternate; }
+        .blob-2 { background: var(--ghars-green2); animation: blob 9s infinite alternate-reverse 2s; }
+        .blob-3 { background: #34d399; animation: blob 9s infinite alternate 4s; }
         @keyframes blob {
             0% { transform: translate(0px, 0px) scale(1); }
-            100% { transform: translate(20px, -30px) scale(1.1); }
+            100% { transform: translate(24px, -32px) scale(1.12); }
         }
-        input[type="radio"]:checked + span { background-color: var(--ghars-green); color: white; border-color: var(--ghars-green); }
-        input[type="radio"].excused:checked + span { background-color: var(--ghars-orange); color: white; border-color: var(--ghars-orange); }
-        input[type="radio"].absent:checked + span { background-color: var(--ghars-magenta); color: white; border-color: var(--ghars-magenta); }
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(14px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .fade-up { animation: fadeUp .45s ease both; }
+        .student-row { animation: fadeUp .3s ease both; }
+
+        input[type="radio"]:checked + span { background-color: var(--ghars-green); color: white; border-color: var(--ghars-green); box-shadow: 0 6px 14px rgba(11,59,44,.22); }
+        input[type="radio"].excused:checked + span { background-color: var(--ghars-gold); color: white; border-color: var(--ghars-gold); box-shadow: 0 6px 14px rgba(217,119,6,.25); }
+        input[type="radio"].absent:checked + span { background-color: var(--ghars-magenta); color: white; border-color: var(--ghars-magenta); box-shadow: 0 6px 14px rgba(190,24,93,.25); }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #0b3b2c, #147a54);
+            box-shadow: 0 14px 28px rgba(11, 59, 44, 0.25);
+            transition: transform .15s ease, box-shadow .15s ease, filter .15s ease;
+        }
+        .btn-primary:hover { transform: translateY(-1px); filter: brightness(1.05); }
+        .btn-primary:active { transform: translateY(0); }
+        .btn-primary:disabled { opacity: .7; cursor: not-allowed; transform: none; }
+
+        .icon-btn { transition: transform .15s ease, background .15s ease; }
+        .icon-btn:hover { transform: translateY(-1px); }
+        .icon-btn:active { transform: translateY(0); }
+
+        .scrollbar-nice::-webkit-scrollbar { width: 8px; }
+        .scrollbar-nice::-webkit-scrollbar-thumb { background: #bcd8c9; border-radius: 99px; }
+        .scrollbar-nice::-webkit-scrollbar-track { background: transparent; }
+
+        .status-dot { width: 9px; height: 9px; border-radius: 99px; display: inline-block; }
     </style>
-    <link rel="stylesheet" href="styles.css?v=1.0.0">
+    <link rel="stylesheet" href="styles.css?v=1.0.1">
 </head>
 <body class="min-h-screen relative flex flex-col justify-between text-slate-800">
 
@@ -59,89 +95,98 @@
         <div class="absolute bottom-[-20%] left-[20%] w-96 h-96 rounded-full mix-blend-multiply filter blur-3xl opacity-20 blob-3"></div>
     </div>
 
-    <!-- إشعارات -->
     <div id="toast" class="fixed top-5 left-1/2 transform -translate-x-1/2 z-50 transition-all duration-500 opacity-0 -translate-y-10 flex items-center gap-3 px-6 py-3 rounded-full shadow-2xl font-bold text-white pointer-events-none">
         <i id="toastIcon" class="fa-solid fa-check-circle text-xl"></i>
         <span id="toastMessage">تمت العملية!</span>
     </div>
 
     <main class="relative z-10 max-w-lg mx-auto p-5 w-full flex-grow flex flex-col pt-10">
-        <div class="text-center mb-8">
-            <div class="inline-block p-2 rounded-3xl glass-card mb-4 shadow-lg bg-white/90">
-                <img src="logo.png" alt="شعار غرس" class="w-20 h-20 rounded-2xl object-cover mx-auto">
+        <div class="text-center mb-8 fade-up">
+            <div class="hero-ring inline-block mb-4 shadow-lg">
+                <div class="hero-inner px-5 py-4">
+                    <img src="logo.png" alt="شعار غرس" class="w-20 h-20 rounded-2xl object-cover mx-auto">
+                </div>
             </div>
-            <h1 class="text-2xl font-extrabold text-[#0f3d2e] drop-shadow-sm">روضة ومدرسة غرس الحديثة</h1>
-            <p class="text-sm font-semibold text-[#be185d] mt-1 bg-white/60 inline-block px-4 py-1 rounded-full">تطبيق الحضور والغياب</p>
+            <h1 class="text-2xl font-black text-[#0b3b2c] drop-shadow-sm">روضة ومدرسة غرس الحديثة</h1>
+            <p class="text-sm font-bold text-[#be185d] mt-2 bg-white/70 inline-block px-4 py-1 rounded-full border border-pink-100">تطبيق الحضور والغياب</p>
+            <div class="mt-3 flex items-center justify-center gap-2 text-[11px] font-bold text-slate-500">
+                <span class="status-dot bg-green-600"></span> حاضر
+                <span class="status-dot bg-amber-500 mr-2"></span> مأذون
+                <span class="status-dot bg-pink-700 mr-2"></span> غائب
+            </div>
         </div>
 
         <!-- شاشة الدخول -->
-        <div id="loginScreen" class="glass-card rounded-3xl p-8 mb-10">
+        <div id="loginScreen" class="glass-card rounded-3xl p-8 mb-10 fade-up">
             <div class="text-center mb-6">
-                <h2 class="text-lg font-bold text-slate-700">مرحباً بكِ معلمتي</h2>
+                <h2 class="text-lg font-black text-slate-700">مرحباً بكِ معلمتي</h2>
                 <p class="text-xs text-slate-500 mt-1">يرجى إدخال كود الدخول الخاص بكِ</p>
             </div>
             <div class="space-y-5">
                 <div class="relative">
                     <i class="fa-solid fa-lock absolute right-4 top-1/2 transform -translate-y-1/2 text-slate-400"></i>
-                    <input type="password" id="teacherIdInput" placeholder="كود المعلمة..." class="w-full pl-4 pr-12 py-4 rounded-2xl border-2 border-white/60 focus:border-[#0f3d2e] focus:outline-none bg-white/70 text-center text-xl tracking-widest font-bold text-[#0f3d2e] shadow-inner transition-all">
+                    <input type="password" id="teacherIdInput" placeholder="كود المعلمة..." autocomplete="current-password" class="w-full pl-4 pr-12 py-4 rounded-2xl border-2 border-emerald-100 focus:border-[#0b3b2c] focus:outline-none bg-white/80 text-center text-xl tracking-widest font-bold text-[#0b3b2c] shadow-inner transition-all">
                 </div>
-                <button onclick="handleLogin()" class="w-full bg-gradient-to-l from-[#0f3d2e] to-[#185c46] text-white font-bold py-4 rounded-2xl transition-all shadow-xl shadow-[#0f3d2e]/20 flex items-center justify-center gap-2">
+                <button onclick="handleLogin(this)" class="btn-primary w-full text-white font-bold py-4 rounded-2xl flex items-center justify-center gap-2">
                     <i class="fa-solid fa-arrow-right-to-bracket"></i> دخول للنظام
                 </button>
+                <p class="text-[11px] text-center text-slate-400 font-semibold">أول دخول يحتاج إنترنت، وبعدها الدخول سريع حتى مع نت ضعيف.</p>
             </div>
         </div>
 
         <!-- لوحة التحكم -->
         <div id="dashboardScreen" class="hidden-screen space-y-5 mb-10">
-            <div class="glass-card rounded-3xl p-5 flex flex-col gap-4">
-                <div class="flex justify-between items-center border-b border-white/60 pb-4">
+            <div class="glass-card rounded-3xl p-5 flex flex-col gap-4 fade-up">
+                <div class="flex justify-between items-center border-b border-emerald-50 pb-4">
                     <div class="flex items-center gap-3">
-                        <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#0f3d2e] to-[#185c46] text-white flex items-center justify-center text-xl shadow-md">
+                        <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#0b3b2c] to-[#147a54] text-white flex items-center justify-center text-xl shadow-md">
                             <i class="fa-solid fa-chalkboard-user"></i>
                         </div>
                         <div>
-                            <h3 class="font-bold text-[#0f3d2e] text-lg flex items-center gap-2">
+                            <h3 class="font-black text-[#0b3b2c] text-lg flex items-center gap-2">
                                 <span id="teacherNameDisplay">الاسم</span>
-                                <button onclick="editTeacherName()" class="text-xs text-slate-400 hover:text-[#be185d] transition-colors" title="تعديل الاسم">
+                                <button onclick="editTeacherName()" class="text-xs text-slate-400 hover:text-[#be185d] transition-colors icon-btn" title="تعديل الاسم">
                                     <i class="fa-solid fa-pen"></i>
                                 </button>
                             </h3>
-                            <p class="text-xs font-bold text-[#be185d] flex items-center gap-2 mt-1">الفصل: 
+                            <p class="text-xs font-bold text-[#be185d] flex items-center gap-2 mt-1">الفصل:
                                 <span id="classNameDisplay">--</span>
-                                <button onclick="editClassName()" class="text-slate-400 hover:text-[#0f3d2e] transition-colors" title="تعديل الفصل">
+                                <button onclick="editClassName()" class="text-slate-400 hover:text-[#0b3b2c] transition-colors icon-btn" title="تعديل الفصل">
                                     <i class="fa-solid fa-pen"></i>
                                 </button>
                             </p>
                         </div>
                     </div>
                     <div class="flex gap-2">
-                        <button onclick="syncOfflineData()" class="w-10 h-10 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center shadow-sm" title="مزامنة البيانات">
+                        <button onclick="syncOfflineData()" class="w-10 h-10 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center shadow-sm icon-btn" title="مزامنة البيانات">
                             <i class="fa-solid fa-arrows-rotate"></i>
                         </button>
-                        <button onclick="handleLogout()" class="w-10 h-10 bg-red-50 text-red-500 rounded-2xl flex items-center justify-center shadow-sm" title="تسجيل الخروج">
+                        <button onclick="handleLogout()" class="w-10 h-10 bg-red-50 text-red-500 rounded-2xl flex items-center justify-center shadow-sm icon-btn" title="تسجيل الخروج">
                             <i class="fa-solid fa-power-off"></i>
                         </button>
                     </div>
                 </div>
                 <div class="flex justify-between items-center px-2">
-                    <div class="text-xs font-bold text-slate-600 flex items-center gap-2"><i class="fa-solid fa-calendar-day text-[#0f3d2e]"></i> <span id="dayDisplay">--</span></div>
+                    <div class="text-xs font-bold text-slate-600 flex items-center gap-2"><i class="fa-solid fa-calendar-day text-[#0b3b2c]"></i> <span id="dayDisplay">--</span></div>
                     <div class="text-xs font-bold text-slate-600 flex items-center gap-2"><i class="fa-solid fa-clock text-[#be185d]"></i> <span id="dateDisplay">--</span></div>
                 </div>
+                <div id="pendingBar" class="hidden-screen text-[12px] font-bold text-amber-700 bg-amber-50 border border-amber-200 rounded-2xl px-4 py-2"></div>
             </div>
 
-            <div class="glass-card rounded-3xl p-5">
-                <h4 class="text-sm font-bold text-[#0f3d2e] mb-3 flex items-center gap-2"><i class="fa-solid fa-user-plus text-[#be185d]"></i> تسجيل طالب جديد</h4>
+            <div class="glass-card rounded-3xl p-5 fade-up">
+                <h4 class="text-sm font-black text-[#0b3b2c] mb-3 flex items-center gap-2"><i class="fa-solid fa-user-plus text-[#be185d]"></i> تسجيل طالب جديد</h4>
                 <div class="flex gap-2">
-                    <input type="text" id="newStudentName" placeholder="اسم الطالب الثلاثي..." class="flex-grow px-4 py-3 rounded-xl border-2 border-white/60 focus:border-[#be185d] focus:outline-none bg-white/70 text-sm font-semibold">
-                    <button onclick="addNewStudent()" class="bg-[#be185d] text-white px-5 rounded-xl text-sm font-bold shadow-lg shadow-pink-900/20">إضافة</button>
+                    <input type="text" id="newStudentName" placeholder="اسم الطالب..." maxlength="120" class="flex-grow px-4 py-3 rounded-xl border-2 border-emerald-100 focus:border-[#be185d] focus:outline-none bg-white/80 text-sm font-semibold">
+                    <button onclick="addNewStudent(this)" class="bg-[#be185d] hover:brightness-110 text-white px-5 rounded-xl text-sm font-bold shadow-lg shadow-pink-900/20 icon-btn">إضافة</button>
                 </div>
             </div>
 
-            <div class="glass-card rounded-3xl p-5">
-                <h4 class="text-sm font-bold text-[#0f3d2e] mb-4 flex items-center gap-2"><i class="fa-solid fa-list-check text-[#be185d]"></i> كشف الحضور والغياب</h4>
-                <div id="studentsListContainer" class="max-h-80 overflow-y-auto space-y-3 pr-2 scrollbar-hide"></div>
-                <button onclick="saveAttendance()" id="saveBtn" class="w-full mt-6 bg-gradient-to-r from-[#0f3d2e] to-[#185c46] text-white font-bold py-4 rounded-2xl transition-all shadow-xl shadow-[#0f3d2e]/20 flex items-center justify-center gap-2 text-lg">
-                    <i class="fa-solid fa-bolt text-yellow-400"></i> حفظ وتحديث سريع
+            <div class="glass-card rounded-3xl p-5 fade-up">
+                <h4 class="text-sm font-black text-[#0b3b2c] mb-1 flex items-center gap-2"><i class="fa-solid fa-list-check text-[#be185d]"></i> كشف الحضور والغياب</h4>
+                <p class="text-[11px] text-slate-400 font-semibold mb-4">كلمة "تم" لا تظهر إلا بعد وصول الحضور فعلاً إلى الشيت. لا تغلقي التطبيق قبل ظهورها.</p>
+                <div id="studentsListContainer" class="max-h-80 overflow-y-auto space-y-3 pr-1 scrollbar-nice"></div>
+                <button onclick="saveAttendance(this)" id="saveBtn" class="btn-primary w-full mt-6 text-white font-black py-4 rounded-2xl flex items-center justify-center gap-2 text-lg">
+                    <i class="fa-solid fa-bolt text-yellow-300"></i> تسليم الحضور
                 </button>
             </div>
         </div>
@@ -152,37 +197,55 @@
     </footer>
 
     <script>
+        // ضعي رابط الـ Web App هنا (نفس رابطك الحالي يعمل مباشرة)
         const GAS_URL = "https://script.google.com/macros/s/AKfycbwTezSxIIkrM9d9Y0OFqq2BynFp6yhstSzg3DgKzHlJDnOlCMhJo2f8Hd7x63l66HKSvg/exec";
 
         let currentTeacher = null, currentClass = null, studentsData = [];
+        let isSaving = false;
 
-        const now = new Date();
-        const year = now.getFullYear();
-        const month = String(now.getMonth() + 1).padStart(2, '0');
-        const dayNum = String(now.getDate()).padStart(2, '0');
-        const formattedDate = `${year}-${month}-${dayNum}`;
         const daysArabic = ['الأحد', 'الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'];
-        const currentDayName = daysArabic[now.getDay()];
 
-        document.getElementById('dateDisplay').innerText = formattedDate;
-        document.getElementById('dayDisplay').innerText = currentDayName;
+        function todayISO() {
+            const n = new Date();
+            return n.getFullYear() + '-' + String(n.getMonth() + 1).padStart(2, '0') + '-' + String(n.getDate()).padStart(2, '0');
+        }
+        function todayDayName() {
+            return daysArabic[new Date().getDay()];
+        }
+        function refreshToday() {
+            document.getElementById('dateDisplay').innerText = todayISO();
+            document.getElementById('dayDisplay').innerText = todayDayName();
+        }
+        refreshToday();
+        setInterval(refreshToday, 60000);
+
+        window.addEventListener('beforeunload', function (e) {
+            if (isSaving) {
+                e.preventDefault();
+                e.returnValue = '';
+            }
+        });
 
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
-                navigator.serviceWorker.register('./sw.js').then((reg) => {
-                    console.log('تم التسجيل بنجاح');
-                });
+                navigator.serviceWorker.register('./sw.js').catch(() => {});
             });
+        }
+
+        function escapeHtml(s) {
+            return String(s === null || s === undefined ? '' : s)
+                .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
         }
 
         function showToast(message, type = 'success', duration = 4000) {
             const toast = document.getElementById('toast'), icon = document.getElementById('toastIcon'), msg = document.getElementById('toastMessage');
             if (type === 'success') {
-                toast.className = "fixed top-5 left-1/2 transform -translate-x-1/2 z-50 transition-all duration-500 flex items-center gap-3 px-6 py-3 rounded-full shadow-2xl font-bold text-white pointer-events-none bg-gradient-to-r from-[#0f3d2e] to-[#185c46] translate-y-0 opacity-100";
-                icon.className = "fa-solid fa-check-circle text-xl text-green-400";
+                toast.className = "fixed top-5 left-1/2 transform -translate-x-1/2 z-50 transition-all duration-500 flex items-center gap-3 px-6 py-3 rounded-full shadow-2xl font-bold text-white pointer-events-none bg-gradient-to-r from-[#0b3b2c] to-[#147a54] translate-y-0 opacity-100";
+                icon.className = "fa-solid fa-check-circle text-xl text-green-300";
             } else if (type === 'warning') {
-                toast.className = "fixed top-5 left-1/2 transform -translate-x-1/2 z-50 transition-all duration-500 flex items-center gap-3 px-6 py-3 rounded-full shadow-2xl font-bold text-slate-800 pointer-events-none bg-amber-400 translate-y-0 opacity-100";
-                icon.className = "fa-solid fa-wifi text-xl text-slate-800";
+                toast.className = "fixed top-5 left-1/2 transform -translate-x-1/2 z-50 transition-all duration-500 flex items-center gap-3 px-6 py-3 rounded-full shadow-2xl font-bold text-slate-800 pointer-events-none bg-amber-300 translate-y-0 opacity-100";
+                icon.className = "fa-solid fa-triangle-exclamation text-xl text-slate-800";
             } else {
                 toast.className = "fixed top-5 left-1/2 transform -translate-x-1/2 z-50 transition-all duration-500 flex items-center gap-3 px-6 py-3 rounded-full shadow-2xl font-bold text-white pointer-events-none bg-gradient-to-r from-[#be185d] to-red-600 translate-y-0 opacity-100";
                 icon.className = "fa-solid fa-circle-exclamation text-xl text-white";
@@ -191,131 +254,188 @@
             setTimeout(() => { toast.classList.remove('translate-y-0', 'opacity-100'); toast.classList.add('-translate-y-10', 'opacity-0'); }, duration);
         }
 
+        function setBtnLoading(btn, loading, loadingText) {
+            if (!btn) return;
+            if (loading) {
+                btn.dataset.original = btn.innerHTML;
+                btn.disabled = true;
+                btn.innerHTML = '<i class="fa-solid fa-spinner animate-spin"></i> ' + (loadingText || 'جاري الإرسال... انتظر ظهور تم');
+            } else {
+                btn.disabled = false;
+                if (btn.dataset.original) btn.innerHTML = btn.dataset.original;
+            }
+        }
+
+        async function fetchWithTimeout(url, options, timeoutMs) {
+            const controller = new AbortController();
+            const t = setTimeout(() => controller.abort(), timeoutMs || 30000);
+            try {
+                const res = await fetch(url, Object.assign({}, options, { signal: controller.signal, redirect: 'follow' }));
+                return res;
+            } finally {
+                clearTimeout(t);
+            }
+        }
+
+        // إرسال موثوق: لا نعتبر العملية "تمت" إلا برد success من code.gs نفسه
+        async function postToServer(payload) {
+            let lastErr = null;
+            for (let attempt = 1; attempt <= 2; attempt++) {
+                try {
+                    const res = await fetchWithTimeout(GAS_URL, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                        body: JSON.stringify(payload)
+                    }, 30000);
+                    const text = await res.text();
+                    let data = null;
+                    try { data = JSON.parse(text); } catch (e) { throw new Error('رد غير صالح من السيرفر'); }
+                    if (!res.ok) throw new Error((data && data.message) || 'خطأ من السيرفر');
+                    if (!data || data.status !== 'success') throw new Error((data && data.message) || 'لم يؤكد السيرفر الحفظ');
+                    return data;
+                } catch (e) {
+                    lastErr = e;
+                    if (attempt < 2 && String(e && e.name) !== 'AbortError') { await new Promise(r => setTimeout(r, 1200)); continue; }
+                    if (attempt < 2) { await new Promise(r => setTimeout(r, 1200)); continue; }
+                }
+            }
+            throw lastErr || new Error('تعذر الاتصال بالسيرفر');
+        }
+
+        async function getFromServer(url) {
+            const res = await fetchWithTimeout(url, { method: 'GET', redirect: 'follow' }, 30000);
+            const text = await res.text();
+            return JSON.parse(text);
+        }
+
         window.addEventListener('online', syncOfflineData);
         window.addEventListener('offline', () => showToast('انقطع الاتصال، التطبيق يعمل في وضع الأوفلاين الآن', 'warning'));
 
+        function readQueue() {
+            try { return JSON.parse(localStorage.getItem('ghars_offline_queue') || '[]'); }
+            catch (e) { return []; }
+        }
+        function writeQueue(q) {
+            localStorage.setItem('ghars_offline_queue', JSON.stringify(q));
+            updatePendingBar();
+        }
+        function makeId() {
+            return 'q' + Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+        }
+
         function queueOfflineAction(actionData) {
-            let queue = JSON.parse(localStorage.getItem('ghars_offline_queue') || '[]');
-            if (actionData.action === 'batch_attendance') {
-                let existingIndex = queue.findIndex(item => item.action === 'batch_attendance' && item.records[0].className === actionData.records[0].className && item.records[0].date === actionData.records[0].date);
-                if (existingIndex > -1) { queue[existingIndex] = actionData; } else { queue.push(actionData); }
+            const queue = readQueue();
+            const item = Object.assign({ id: makeId(), ts: Date.now() }, actionData);
+            if (item.action === 'batch_attendance' && item.records && item.records[0]) {
+                const cls = item.records[0].className, dt = item.records[0].date;
+                const existingIndex = queue.findIndex(x => x.action === 'batch_attendance' && x.records && x.records[0] && x.records[0].className === cls && x.records[0].date === dt);
+                if (existingIndex > -1) { queue[existingIndex] = item; }
+                else { queue.push(item); }
             } else {
-                queue.push(actionData);
+                queue.push(item);
             }
-            localStorage.setItem('ghars_offline_queue', JSON.stringify(queue));
+            // سقف حماية حتى لا تمتلئ ذاكرة الهاتف
+            while (queue.length > 100) queue.shift();
+            writeQueue(queue);
+        }
+
+        function removeQueueItem(id) {
+            writeQueue(readQueue().filter(x => x.id !== id));
+        }
+
+        function updatePendingBar() {
+            const bar = document.getElementById('pendingBar');
+            if (!bar) return;
+            const q = readQueue();
+            if (!q.length || document.getElementById('dashboardScreen').classList.contains('hidden-screen')) {
+                bar.classList.add('hidden-screen');
+                return;
+            }
+            bar.classList.remove('hidden-screen');
+            bar.innerHTML = 'لديك ' + q.length + ' عملية محفوظة في الهاتف لم تصل للشيت بعد. اضغط زر المزامنة أعلى الشاشة.';
         }
 
         function updateOfflineStudentsCache() {
-            let offlineData = localStorage.getItem('ghars_offline_auth');
-            if (offlineData) {
-                let parsed = JSON.parse(offlineData);
-                parsed.students = studentsData;
-                localStorage.setItem('ghars_offline_auth', JSON.stringify(parsed));
+            try {
+                const raw = localStorage.getItem('ghars_offline_auth');
+                if (raw) {
+                    const parsed = JSON.parse(raw);
+                    parsed.students = studentsData;
+                    parsed.savedAt = Date.now();
+                    localStorage.setItem('ghars_offline_auth', JSON.stringify(parsed));
+                }
+            } catch (e) {}
+        }
+
+        function currentRadioSelections() {
+            const map = {};
+            for (let i = 0; i < studentsData.length; i++) {
+                const radios = document.getElementsByName('attendance_' + i);
+                for (let r of radios) { if (r.checked) { map[studentsData[i]] = r.value; break; } }
+            }
+            return map;
+        }
+        function applyRadioSelections(map) {
+            for (let i = 0; i < studentsData.length; i++) {
+                const want = map[studentsData[i]];
+                if (!want) continue;
+                const radios = document.getElementsByName('attendance_' + i);
+                for (let r of radios) { r.checked = (r.value === want); }
             }
         }
 
-        // ==========================================
-        // التحديث الجديد: دخول صاروخي يطلب بيانات المعلمة فقط
-        // ==========================================
-        async function handleLogin() {
-            const idInput = document.getElementById('teacherIdInput').value.trim();
+        async function handleLogin(btn) {
+            const inputEl = document.getElementById('teacherIdInput');
+            const idInput = (inputEl.value || '').trim();
             if (!idInput) { showToast('الرجاء إدخال الكود أولاً', 'error'); return; }
 
-            const btn = event.currentTarget, originalHTML = btn.innerHTML;
-            btn.innerHTML = `<i class="fa-solid fa-spinner animate-spin"></i> جاري التحقق...`;
+            setBtnLoading(btn, true, 'جاري التحقق...');
 
-            // 1. الدخول السريع جداً من الذاكرة
-            let offlineData = localStorage.getItem('ghars_offline_auth');
-            if (offlineData) {
-                let parsed = JSON.parse(offlineData);
-                if (parsed.id === idInput) {
-                    currentTeacher = parsed.teacher; 
-                    currentClass = parsed.className; 
-                    studentsData = parsed.students || [];
-                    
-                    openDashboard();
-                    showToast(`تسجيل دخول سريع! أهلاً بكِ أ. ${currentTeacher} ⚡`, 'success');
-                    btn.innerHTML = originalHTML;
-                    
-                    if(navigator.onLine) silentBackgroundSync(idInput);
-                    return; 
-                }
-            }
-
-            // 2. أول مرة يتم فيها تسجيل الكود 
-            if (navigator.onLine) {
-                showToast('أول مرة دخول.. جاري جلب البيانات قد يستغرق دقيقتين ⏳', 'warning', 5000);
-                try {
-                    // التعديل السحري: نرسل كود المعلمة للسيرفر ليجلب بياناتها فقط!
-                    let res = await fetch(`${GAS_URL}?action=login&teacherId=${encodeURIComponent(idInput)}`);
-                    let data = await res.json();
-                    
-                    let teacherFound = null;
-                    
-                    // إذا كان السيرفر محدث ويدعم الجلب السريع
-                    if (data.fastLogin) {
-                        if (data.success) {
-                            teacherFound = { name: data.teacherName, className: data.className };
-                            studentsData = data.students;
-                        }
-                    } else {
-                        // دعم احتياطي للسيرفر القديم في حال لم نحدثه بعد
-                        for (let i = 1; i < data.teachers.length; i++) {
-                            if (String(data.teachers[i][0]).trim() === idInput || String(data.teachers[i][1]).trim() === idInput) {
-                                teacherFound = { name: data.teachers[i][1] || data.teachers[i][0], className: data.teachers[i][2] || "عام" };
-                                break;
-                            }
-                        }
-                        if (teacherFound) {
-                            studentsData = [];
-                            for (let i = 1; i < data.students.length; i++) {
-                                if (String(data.students[i][0]).trim() === String(teacherFound.className).trim()) {
-                                    studentsData.push(data.students[i][1]);
-                                }
-                            }
-                        }
-                    }
-
-                    if (teacherFound) {
-                        currentTeacher = teacherFound.name;
-                        currentClass = teacherFound.className;
-
-                        localStorage.setItem('ghars_offline_auth', JSON.stringify({ id: idInput, teacher: currentTeacher, className: currentClass, students: studentsData }));
-                        openDashboard();
-                        showToast(`أهلاً بكِ أ. ${currentTeacher}`, 'success');
-                    } else {
-                        showToast('كود المعلمة غير صحيح', 'error');
-                    }
-                } catch (err) { 
-                    showToast('تأخر الاتصال بالسيرفر، حاول مرة أخرى.', 'error');
-                } 
-                finally { btn.innerHTML = originalHTML; }
-            } else { 
-                showToast('الكود غير مسجل محلياً ولا يوجد إنترنت!', 'error'); 
-                btn.innerHTML = originalHTML; 
-            }
-        }
-
-        async function silentBackgroundSync(idInput) {
+            // 1) دخول سريع من ذاكرة الهاتف
             try {
-                let res = await fetch(`${GAS_URL}?action=login&teacherId=${encodeURIComponent(idInput)}`);
-                let data = await res.json();
-                
+                const offlineRaw = localStorage.getItem('ghars_offline_auth');
+                if (offlineRaw) {
+                    const parsed = JSON.parse(offlineRaw);
+                    if (parsed.id === idInput && parsed.teacher && parsed.className) {
+                        currentTeacher = parsed.teacher;
+                        currentClass = parsed.className;
+                        studentsData = parsed.students || [];
+                        openDashboard();
+                        showToast('تسجيل دخول سريع! أهلاً بكِ أ. ' + currentTeacher, 'success');
+                        setBtnLoading(btn, false);
+                        if (navigator.onLine) silentBackgroundSync(idInput);
+                        updatePendingBar();
+                        return;
+                    }
+                }
+            } catch (e) {}
+
+            // 2) أول مرة: جلب من السيرفر
+            if (!navigator.onLine) {
+                showToast('الكود غير مسجل في الهاتف ولا يوجد إنترنت!', 'error');
+                setBtnLoading(btn, false);
+                return;
+            }
+            showToast('أول مرة دخول.. جاري جلب البيانات', 'warning', 5000);
+            try {
+                const data = await getFromServer(GAS_URL + '?action=login&teacherId=' + encodeURIComponent(idInput));
+
                 let teacherFound = null;
                 let newStudents = [];
-
-                if (data.fastLogin && data.success) {
-                    teacherFound = { name: data.teacherName, className: data.className };
-                    newStudents = data.students;
-                } else if (!data.fastLogin) {
-                    for (let i = 1; i < data.teachers.length; i++) {
+                if (data.fastLogin) {
+                    if (data.success) {
+                        teacherFound = { name: data.teacherName, className: data.className };
+                        newStudents = data.students || [];
+                    }
+                } else {
+                    for (let i = 1; i < (data.teachers || []).length; i++) {
                         if (String(data.teachers[i][0]).trim() === idInput || String(data.teachers[i][1]).trim() === idInput) {
                             teacherFound = { name: data.teachers[i][1] || data.teachers[i][0], className: data.teachers[i][2] || "عام" };
                             break;
                         }
                     }
                     if (teacherFound) {
-                        for (let i = 1; i < data.students.length; i++) {
+                        for (let i = 1; i < (data.students || []).length; i++) {
                             if (String(data.students[i][0]).trim() === String(teacherFound.className).trim()) {
                                 newStudents.push(data.students[i][1]);
                             }
@@ -327,193 +447,287 @@
                     currentTeacher = teacherFound.name;
                     currentClass = teacherFound.className;
                     studentsData = newStudents;
-                    localStorage.setItem('ghars_offline_auth', JSON.stringify({ id: idInput, teacher: currentTeacher, className: currentClass, students: studentsData }));
-                    renderStudents(); 
+                    localStorage.setItem('ghars_offline_auth', JSON.stringify({ id: idInput, teacher: currentTeacher, className: currentClass, students: studentsData, savedAt: Date.now() }));
+                    openDashboard();
+                    updatePendingBar();
+                    showToast('أهلاً بكِ أ. ' + currentTeacher, 'success');
+                } else {
+                    showToast('كود المعلمة غير صحيح', 'error');
                 }
-            } catch (err) { console.log('فشل التحديث الصامت', err); }
+            } catch (err) {
+                showToast('تأخر الاتصال بالسيرفر، حاولي مرة أخرى.', 'error');
+            } finally {
+                setBtnLoading(btn, false);
+            }
+        }
+
+        async function silentBackgroundSync(idInput) {
+            try {
+                const data = await getFromServer(GAS_URL + '?action=login&teacherId=' + encodeURIComponent(idInput));
+                let teacherFound = null, newStudents = [];
+                if (data.fastLogin && data.success) {
+                    teacherFound = { name: data.teacherName, className: data.className };
+                    newStudents = data.students || [];
+                } else if (!data.fastLogin && data.teachers) {
+                    for (let i = 1; i < data.teachers.length; i++) {
+                        if (String(data.teachers[i][0]).trim() === idInput || String(data.teachers[i][1]).trim() === idInput) {
+                            teacherFound = { name: data.teachers[i][1] || data.teachers[i][0], className: data.teachers[i][2] || "عام" };
+                            break;
+                        }
+                    }
+                    if (teacherFound) {
+                        for (let i = 1; i < (data.students || []).length; i++) {
+                            if (String(data.students[i][0]).trim() === String(teacherFound.className).trim()) newStudents.push(data.students[i][1]);
+                        }
+                    }
+                }
+                if (teacherFound) {
+                    const keep = currentRadioSelections();
+                    currentTeacher = teacherFound.name;
+                    currentClass = teacherFound.className;
+                    studentsData = newStudents;
+                    localStorage.setItem('ghars_offline_auth', JSON.stringify({ id: idInput, teacher: currentTeacher, className: currentClass, students: studentsData, savedAt: Date.now() }));
+                    document.getElementById('teacherNameDisplay').innerText = currentTeacher;
+                    document.getElementById('classNameDisplay').innerText = currentClass;
+                    renderStudents();
+                    applyRadioSelections(keep);
+                }
+            } catch (err) {}
         }
 
         function openDashboard() {
+            refreshToday();
             document.getElementById('teacherNameDisplay').innerText = currentTeacher;
             document.getElementById('classNameDisplay').innerText = currentClass;
             renderStudents();
             document.getElementById('loginScreen').classList.add('hidden-screen');
             document.getElementById('dashboardScreen').classList.remove('hidden-screen');
+            updatePendingBar();
         }
 
         function renderStudents() {
             const container = document.getElementById('studentsListContainer');
-            
-            if (studentsData.length === 0) {
-                container.innerHTML = `<p class="text-center text-slate-400 py-6 text-sm font-bold bg-white/50 rounded-2xl">لا يوجد طلاب مسجلين في هذا الفصل حتى الآن.</p>`;
+
+            if (!studentsData.length) {
+                container.innerHTML = '<p class="text-center text-slate-400 py-6 text-sm font-bold bg-white/60 rounded-2xl border">لا يوجد طلاب مسجلين في هذا الفصل حتى الآن.</p>';
                 return;
             }
 
-            let queue = JSON.parse(localStorage.getItem('ghars_offline_queue') || '[]');
-            let pendingBatch = queue.find(item => item.action === 'batch_attendance' && item.records[0].className === currentClass && item.records[0].date === formattedDate);
-            
-            let statusMap = {};
+            const queue = readQueue();
+            const today = todayISO();
+            const pendingBatch = queue.find(item => item.action === 'batch_attendance' && item.records && item.records[0] && item.records[0].className === currentClass && item.records[0].date === today);
+
+            const statusMap = {};
             if (pendingBatch && pendingBatch.records) {
                 pendingBatch.records.forEach(r => { statusMap[r.studentName] = r.status; });
             }
 
-            let htmlHTML = '';
-            
+            let html = '';
             studentsData.forEach((student, index) => {
-                let status = statusMap[student] || 'حاضر'; 
-                
+                const status = statusMap[student] || 'حاضر';
                 const isPresent = status === 'حاضر' ? 'checked' : '';
                 const isExcused = status === 'مأذون' ? 'checked' : '';
                 const isAbsent = status === 'غائب' ? 'checked' : '';
 
-                htmlHTML += `
-                    <div class="flex items-center justify-between bg-white/70 p-3 rounded-2xl border border-white/80 shadow-sm">
-                        <span class="font-bold text-[#0f3d2e] text-sm">${index + 1}. ${student}</span>
-                        <div class="flex items-center gap-3">
-                            <div class="flex gap-1 bg-slate-50 p-1 rounded-xl">
-                                <label class="relative cursor-pointer">
-                                    <input type="radio" name="attendance_${index}" value="حاضر" ${isPresent} class="peer sr-only">
-                                    <span class="block px-3 py-1.5 rounded-lg text-xs font-bold text-slate-500 border border-transparent transition-all">حاضر</span>
-                                </label>
-                                <label class="relative cursor-pointer">
-                                    <input type="radio" name="attendance_${index}" value="مأذون" ${isExcused} class="peer sr-only excused">
-                                    <span class="block px-3 py-1.5 rounded-lg text-xs font-bold text-slate-500 border border-transparent transition-all">مأذون</span>
-                                </label>
-                                <label class="relative cursor-pointer">
-                                    <input type="radio" name="attendance_${index}" value="غائب" ${isAbsent} class="peer sr-only absent">
-                                    <span class="block px-3 py-1.5 rounded-lg text-xs font-bold text-slate-500 border border-transparent transition-all">غائب</span>
-                                </label>
-                            </div>
-                            <button onclick="deleteStudent('${student}')" class="w-8 h-8 rounded-full bg-red-50 text-red-400 hover:bg-red-500 hover:text-white transition-all flex items-center justify-center">
-                                <i class="fa-solid fa-trash-can text-xs"></i>
-                            </button>
-                        </div>
-                    </div>
-                `;
+                html += ''
+                    + '<div class="student-row flex items-center justify-between gap-3 bg-white p-3 rounded-2xl border border-emerald-50 shadow-sm">'
+                    +   '<span class="font-bold text-[#0b3b2c] text-sm leading-6">' + (index + 1) + '. ' + escapeHtml(student) + '</span>'
+                    +   '<div class="flex items-center gap-2">'
+                    +     '<div class="flex gap-1 bg-slate-50 p-1 rounded-xl border">'
+                    +       '<label class="relative cursor-pointer"><input type="radio" name="attendance_' + index + '" value="حاضر" ' + isPresent + ' class="peer sr-only"><span class="block px-3 py-1.5 rounded-lg text-xs font-bold text-slate-500 border border-transparent transition-all">حاضر</span></label>'
+                    +       '<label class="relative cursor-pointer"><input type="radio" name="attendance_' + index + '" value="مأذون" ' + isExcused + ' class="peer sr-only excused"><span class="block px-3 py-1.5 rounded-lg text-xs font-bold text-slate-500 border border-transparent transition-all">مأذون</span></label>'
+                    +       '<label class="relative cursor-pointer"><input type="radio" name="attendance_' + index + '" value="غائب" ' + isAbsent + ' class="peer sr-only absent"><span class="block px-3 py-1.5 rounded-lg text-xs font-bold text-slate-500 border border-transparent transition-all">غائب</span></label>'
+                    +     '</div>'
+                    +     '<div class="flex flex-col gap-1">'
+                    +       '<button onclick="renameStudentByIndex(' + index + ')" class="w-8 h-8 rounded-full bg-blue-50 text-blue-500 hover:bg-blue-600 hover:text-white transition-all flex items-center justify-center icon-btn" title="تعديل اسم الطالب"><i class="fa-solid fa-pen text-xs"></i></button>'
+                    +       '<button onclick="deleteStudentByIndex(' + index + ')" class="w-8 h-8 rounded-full bg-red-50 text-red-400 hover:bg-red-500 hover:text-white transition-all flex items-center justify-center icon-btn" title="حذف الطالب"><i class="fa-solid fa-trash-can text-xs"></i></button>'
+                    +     '</div>'
+                    +   '</div>'
+                    + '</div>';
             });
-            
-            container.innerHTML = htmlHTML;
+
+            container.innerHTML = html;
         }
 
-        async function addNewStudent() {
-            const input = document.getElementById('newStudentName'), studentName = input.value.trim();
-            if (!studentName || studentsData.includes(studentName)) return;
+        async function addNewStudent(btn) {
+            const input = document.getElementById('newStudentName');
+            const studentName = (input.value || '').trim();
+            if (!studentName) { showToast('اكتبي اسم الطالب أولاً', 'error'); return; }
+            if (studentsData.includes(studentName)) { showToast('هذا الطالب مسجل بالفعل', 'error'); return; }
 
-            studentsData.push(studentName); 
-            updateOfflineStudentsCache();
-            renderStudents(); 
-            input.value = '';
-            
+            setBtnLoading(btn, true, 'جاري الإضافة...');
             const payload = { action: 'add_student', className: currentClass, studentName: studentName };
 
-            if (navigator.onLine) {
-                showToast('تمت إضافة الطالب', 'success');
-                try { 
-                    await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(payload) }); 
-                } catch (e) { queueOfflineAction(payload); }
-            } else { 
+            if (!navigator.onLine) {
+                studentsData.push(studentName);
+                updateOfflineStudentsCache();
+                renderStudents();
+                input.value = '';
                 queueOfflineAction(payload);
-                showToast('الإنترنت غير متوفر: حُفظ الطالب مؤقتاً للمزامنة', 'warning'); 
+                showToast('لا يوجد إنترنت: حُفظ الطالب في الهاتف فقط ولم يصل للشيت بعد', 'warning', 6000);
+                setBtnLoading(btn, false);
+                return;
+            }
+            try {
+                await postToServer(payload); // تم فقط بعد رد code.gs
+                studentsData.push(studentName);
+                updateOfflineStudentsCache();
+                renderStudents();
+                input.value = '';
+                showToast('تمت إضافة الطالب في الشيت بنجاح', 'success');
+            } catch (e) {
+                studentsData.push(studentName);
+                updateOfflineStudentsCache();
+                renderStudents();
+                input.value = '';
+                queueOfflineAction(payload);
+                showToast('تعذر الوصول للشيت: حُفظ الطالب في الهاتف وسيُرسل عند المزامنة', 'warning', 6000);
+            } finally {
+                setBtnLoading(btn, false);
             }
         }
 
-        async function deleteStudent(studentName) {
-            if (!confirm(`حذف ${studentName}؟`)) return;
-            studentsData = studentsData.filter(s => s !== studentName); 
+        async function deleteStudentByIndex(index) {
+            const studentName = studentsData[index];
+            if (!studentName) return;
+            if (!confirm('حذف ' + studentName + '؟')) return;
+
+            const backup = studentsData.slice();
+            studentsData = studentsData.filter(s => s !== studentName);
             updateOfflineStudentsCache();
             renderStudents();
-            
-            const payload = { action: 'delete_student', className: currentClass, studentName: studentName };
 
-            if (navigator.onLine) {
-                showToast('تم الحذف', 'success');
-                try { 
-                    await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(payload) }); 
-                } catch (e) { queueOfflineAction(payload); }
-            } else { 
+            const payload = { action: 'delete_student', className: currentClass, studentName: studentName };
+            if (!navigator.onLine) {
                 queueOfflineAction(payload);
-                showToast('الإنترنت غير متوفر: حُفظ أمر الحذف مؤقتاً', 'warning'); 
+                showToast('لا يوجد إنترنت: حُفظ أمر الحذف في الهاتف فقط', 'warning');
+                return;
+            }
+            try {
+                await postToServer(payload);
+                showToast('تم حذف الطالب من الشيت', 'success');
+            } catch (e) {
+                queueOfflineAction(payload);
+                showToast('تعذر الوصول للشيت: حُفظ أمر الحذف في الهاتف', 'warning');
             }
         }
 
-        async function saveAttendance() {
-            if (studentsData.length === 0) return;
+        // زر تعديل اسم الطالب الجديد
+        async function renameStudentByIndex(index) {
+            const oldName = studentsData[index];
+            if (!oldName) return;
+            const newName = prompt('تعديل اسم الطالب:', oldName);
+            if (newName === null) return;
+            const clean = (newName || '').trim();
+            if (!clean || clean === oldName) return;
+            if (studentsData.includes(clean)) { showToast('يوجد طالب آخر بنفس الاسم', 'error'); return; }
 
-            const btn = document.getElementById('saveBtn'), originalHTML = btn.innerHTML;
-            btn.innerHTML = `<i class="fa-solid fa-spinner animate-spin"></i> جاري الإرسال...`;
-            btn.classList.add('opacity-80', 'cursor-not-allowed');
-            
-            let payloadList = [];
+            const backup = studentsData.slice();
+            studentsData[index] = clean;
+            updateOfflineStudentsCache();
+            const keep = currentRadioSelections();
+            renderStudents();
+            applyRadioSelections(keep);
+
+            const payload = { action: 'rename_student', className: currentClass, oldStudentName: oldName, newStudentName: clean };
+            if (!navigator.onLine) {
+                queueOfflineAction(payload);
+                showToast('لا يوجد إنترنت: حُفظ الاسم الجديد في الهاتف فقط', 'warning');
+                return;
+            }
+            showToast('جاري حفظ الاسم الجديد في الشيت...', 'warning', 3000);
+            try {
+                await postToServer(payload);
+                showToast('تم تعديل الاسم في الشيت بنجاح', 'success');
+            } catch (e) {
+                queueOfflineAction(payload);
+                if (String((e && e.message) || '').includes('بالفعل')) {
+                    studentsData = backup;
+                    updateOfflineStudentsCache();
+                    renderStudents();
+                }
+                showToast('تعذر الوصول للشيت: حُفظ التعديل في الهاتف', 'warning', 6000);
+            }
+        }
+
+        async function saveAttendance(btn) {
+            if (!studentsData.length) { showToast('لا يوجد طلاب للحفظ', 'error'); return; }
+            if (isSaving) return;
+            isSaving = true;
+            setBtnLoading(btn || document.getElementById('saveBtn'), true, 'جاري التسليم... لا تغلقي التطبيق');
+            refreshToday();
+            const date = todayISO(), day = todayDayName();
+
+            const payloadList = [];
             for (let i = 0; i < studentsData.length; i++) {
                 const studentName = studentsData[i];
-                const radios = document.getElementsByName(`attendance_${i}`);
+                const radios = document.getElementsByName('attendance_' + i);
                 let status = 'حاضر';
                 for (let r of radios) { if (r.checked) { status = r.value; break; } }
-                
-                payloadList.push({
-                    studentName: studentName,
-                    className: currentClass,
-                    date: formattedDate,
-                    day: currentDayName,
-                    status: status,
-                    teacherName: currentTeacher
-                });
+                payloadList.push({ studentName: studentName, className: currentClass, date: date, day: day, status: status, teacherName: currentTeacher });
             }
-
             const batchData = { action: 'batch_attendance', records: payloadList };
 
-            if (navigator.onLine) {
-                try {
-                    await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(batchData) });
-                    showToast('تم الحفظ والتحديث بلمح البصر! ⚡', 'success');
-                    
-                    let queue = JSON.parse(localStorage.getItem('ghars_offline_queue') || '[]');
-                    queue = queue.filter(item => !(item.action === 'batch_attendance' && item.records[0].className === currentClass && item.records[0].date === formattedDate));
-                    localStorage.setItem('ghars_offline_queue', JSON.stringify(queue));
-
-                } catch (err) { 
-                    queueOfflineAction(batchData);
-                    showToast('الإنترنت ضعيف: تم الحفظ في الهاتف وسيتم الإرسال عند المزامنة', 'warning', 6000); 
-                }
-            } else { 
+            if (!navigator.onLine) {
                 queueOfflineAction(batchData);
-                showToast('الإنترنت غير متوفر: تم الحفظ في الهاتف وسيتم الإرسال عند المزامنة', 'warning', 6000); 
+                showToast('لا يوجد إنترنت: حُفظ الحضور في الهاتف فقط ولم يصل للشيت', 'warning', 6000);
+                isSaving = false;
+                setBtnLoading(btn || document.getElementById('saveBtn'), false);
+                return;
             }
 
-            btn.innerHTML = originalHTML; btn.classList.remove('opacity-80', 'cursor-not-allowed');
+            try {
+                // لا تظهر "تم" إلا بعد رد code.gs بـ success
+                const result = await postToServer(batchData);
+                const q = readQueue().filter(item => !(item.action === 'batch_attendance' && item.records && item.records[0] && item.records[0].className === currentClass && item.records[0].date === date));
+                writeQueue(q);
+                showToast('تم تسليم الحضور وحفظه في الشيت بنجاح', 'success', 5000);
+            } catch (err) {
+                queueOfflineAction(batchData);
+                showToast('لم يصل الحضور للشيت: حُفظ في الهاتف وسيُرسل عند المزامنة', 'warning', 6000);
+            } finally {
+                isSaving = false;
+                setBtnLoading(btn || document.getElementById('saveBtn'), false);
+            }
         }
 
         async function syncOfflineData() {
-            if (!navigator.onLine) {
-                showToast('لا يوجد اتصال بالإنترنت حالياً للمزامنة!', 'error');
-                return;
-            }
+            if (!navigator.onLine) { showToast('لا يوجد اتصال بالإنترنت حالياً للمزامنة!', 'error'); return; }
 
-            let queue = JSON.parse(localStorage.getItem('ghars_offline_queue') || '[]');
-            let oldPending = JSON.parse(localStorage.getItem('ghars_pending_batches') || '[]');
-            if (oldPending.length > 0) {
-                queue.push(...oldPending);
-                localStorage.removeItem('ghars_pending_batches');
-            }
-
-            if (queue.length === 0) {
-                showToast('لا توجد بيانات معلقة، كل شيء محدث! ✨', 'success');
-                return;
-            }
-
-            showToast(`جاري مزامنة ${queue.length} عمليات مع السيرفر...`, 'warning');
+            // ترحيل مخزن قديم إن وجد
             try {
-                for (let action of queue) { 
-                    await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(action) }); 
+                const oldPending = JSON.parse(localStorage.getItem('ghars_pending_batches') || '[]');
+                if (oldPending.length) {
+                    const q = readQueue().concat(oldPending.map(o => Object.assign({ id: makeId(), ts: Date.now() }, o)));
+                    writeQueue(q);
+                    localStorage.removeItem('ghars_pending_batches');
                 }
-                localStorage.removeItem('ghars_offline_queue');
-                showToast('تمت مزامنة جميع السجلات بنجاح! 🚀', 'success');
-            } catch (e) {
-                showToast('حدث خطأ أثناء المزامنة، يرجى المحاولة لاحقاً', 'error');
+            } catch (e) {}
+
+            let queue = readQueue();
+            if (!queue.length) { showToast('لا توجد بيانات معلقة، كل شيء محدث!', 'success'); return; }
+
+            showToast('جاري مزامنة ' + queue.length + ' عمليات مع الشيت... لا تغلقي التطبيق', 'warning', 5000);
+            let sent = 0;
+            const snapshot = queue.slice();
+            for (let action of snapshot) {
+                const { id, ...payload } = action;
+                try {
+                    await postToServer(payload);
+                    removeQueueItem(id); // شطب العملية الناجحة فقط
+                    sent++;
+                } catch (e) {
+                    // نترك الفاشلة في الطابور ونكمل الباقي
+                }
             }
+            const remaining = readQueue().length;
+            if (remaining === 0) showToast('تمت مزامنة جميع السجلات في الشيت بنجاح', 'success', 5000);
+            else showToast('تم إرسال ' + sent + ' وبقي ' + remaining + ' في الهاتف. أعيدي المزامنة.', 'warning', 6000);
+            updatePendingBar();
         }
 
         function handleLogout() {
+            if (isSaving) { showToast('انتظري انتهاء التسليم قبل الخروج', 'warning'); return; }
             currentTeacher = null; currentClass = null; studentsData = [];
             document.getElementById('teacherIdInput').value = '';
             document.getElementById('dashboardScreen').classList.add('hidden-screen');
@@ -522,70 +736,60 @@
 
         async function editTeacherName() {
             const newName = prompt("أدخلي اسم المعلمة الجديد:", currentTeacher);
-            if (!newName || newName.trim() === "" || newName === currentTeacher) return;
-            
-            const oldName = currentTeacher;
-            const normalizedName = newName.trim();
-            const updated = await sendTeacherInfoUpdate('teacherName', oldName, normalizedName);
-            if (!updated) return;
-
-            currentTeacher = normalizedName;
+            if (newName === null) return;
+            const normalized = (newName || '').trim();
+            if (!normalized || normalized === currentTeacher) return;
+            const ok = await sendTeacherInfoUpdate('teacherName', normalized);
+            if (!ok) return;
+            currentTeacher = normalized;
             document.getElementById('teacherNameDisplay').innerText = currentTeacher;
             updateTeacherInfoInCache();
         }
 
         async function editClassName() {
             const newClass = prompt("أدخلي اسم الفصل الجديد:", currentClass);
-            if (!newClass || newClass.trim() === "" || newClass === currentClass) return;
-            
-            const oldClass = currentClass;
-            const normalizedClass = newClass.trim();
-            const updated = await sendTeacherInfoUpdate('className', oldClass, normalizedClass);
-            if (!updated) return;
-
-            currentClass = normalizedClass;
+            if (newClass === null) return;
+            const normalized = (newClass || '').trim();
+            if (!normalized || normalized === currentClass) return;
+            const ok = await sendTeacherInfoUpdate('className', normalized);
+            if (!ok) return;
+            currentClass = normalized;
             document.getElementById('classNameDisplay').innerText = currentClass;
             updateTeacherInfoInCache();
         }
 
         function updateTeacherInfoInCache() {
-            let offlineData = localStorage.getItem('ghars_offline_auth');
-            if (offlineData) {
-                let parsed = JSON.parse(offlineData);
-                parsed.teacher = currentTeacher;
-                parsed.className = currentClass;
-                localStorage.setItem('ghars_offline_auth', JSON.stringify(parsed));
-            }
+            try {
+                const raw = localStorage.getItem('ghars_offline_auth');
+                if (raw) {
+                    const parsed = JSON.parse(raw);
+                    parsed.teacher = currentTeacher;
+                    parsed.className = currentClass;
+                    parsed.savedAt = Date.now();
+                    localStorage.setItem('ghars_offline_auth', JSON.stringify(parsed));
+                }
+            } catch (e) {}
         }
 
-        async function sendTeacherInfoUpdate(updateType, oldValue, newValue) {
-            let authData = JSON.parse(localStorage.getItem('ghars_offline_auth'));
-            const payload = { 
-                action: 'update_teacher_info', 
-                updateType: updateType,
-                oldValue: oldValue, 
-                newValue: newValue,
-                teacherId: authData.id 
-            };
+        async function sendTeacherInfoUpdate(updateType, newValue) {
+            let authData = null;
+            try { authData = JSON.parse(localStorage.getItem('ghars_offline_auth')); } catch (e) {}
+            const payload = { action: 'update_teacher_info', updateType: updateType, newValue: newValue, teacherId: authData ? authData.id : '' };
+            if (!payload.teacherId) { showToast('سجلي الدخول من جديد أولاً', 'error'); return false; }
 
-            if (navigator.onLine) {
-                try { 
-                    const response = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(payload) });
-                    const result = await response.json();
-                    if (!result || result.status !== 'success') {
-                        showToast(result && result.message ? result.message : 'تعذر تحديث البيانات', 'error');
-                        return false;
-                    }
-                    showToast('تم تحديث البيانات بنجاح', 'success');
-                    return true;
-                } catch (e) { 
-                    queueOfflineAction(payload);
-                    showToast('الإنترنت ضعيف: حُفظ التعديل مؤقتاً للمزامنة', 'warning');
-                    return true;
-                }
-            } else { 
+            if (!navigator.onLine) {
                 queueOfflineAction(payload);
-                showToast('الإنترنت غير متوفر: حُفظ التعديل مؤقتاً للمزامنة', 'warning'); 
+                showToast('لا يوجد إنترنت: حُفظ التعديل في الهاتف فقط', 'warning');
+                return true;
+            }
+            try {
+                await postToServer(payload);
+                showToast('تم تحديث البيانات في الشيت بنجاح', 'success');
+                return true;
+            } catch (e) {
+                if (String((e && e.message) || '').includes('بالفعل')) { showToast(e.message, 'error', 6000); return false; }
+                queueOfflineAction(payload);
+                showToast('تعذر الوصول للشيت: حُفظ التعديل في الهاتف', 'warning');
                 return true;
             }
         }

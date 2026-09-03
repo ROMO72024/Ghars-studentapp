@@ -1,16 +1,18 @@
-const CACHE_NAME = "ghars-app-original-ui-v10";
+const CACHE_NAME = "ghars-app-v11";
 const ASSETS = [
     "./",
     "./index.html",
     "./manifest.json",
     "./logo.png",
-    "./styles.css?v=1.0.0",
+    "./styles.css",
     "./tailwind.js"
 ];
 
 self.addEventListener("install", (e) => {
-    self.skipWaiting(); 
-    e.waitUntil(caches.open(CACHE_NAME).then((cache) => cache.addAll(ASSETS)));
+    self.skipWaiting();
+    e.waitUntil(
+        caches.open(CACHE_NAME).then((cache) => cache.addAll(ASSETS)).catch(() => {})
+    );
 });
 
 self.addEventListener("activate", (e) => {
@@ -23,12 +25,33 @@ self.addEventListener("activate", (e) => {
 });
 
 self.addEventListener("fetch", (e) => {
-    if (e.request.url.includes("script.google.com") || e.request.url.includes("googleusercontent.com") || e.request.method !== "GET") {
-        return; 
+    const url = e.request.url || "";
+    // لا نخزن أبداً طلبات الشيت ولا POST
+    if (e.request.method !== "GET" || url.includes("script.google.com") || url.includes("googleusercontent.com")) {
+        return;
     }
+    // التنقل بين الصفحات: الشبكة أولاً ثم الكاش
+    if (e.request.mode === "navigate") {
+        e.respondWith(
+            fetch(e.request).then((res) => {
+                const copy = res.clone();
+                caches.open(CACHE_NAME).then((cache) => cache.put(e.request, copy)).catch(() => {});
+                return res;
+            }).catch(() => caches.match("./index.html"))
+        );
+        return;
+    }
+    // الملفات الثابتة: الكاش أولاً ثم الشبكة (سرعة فورية)
     e.respondWith(
-        fetch(e.request).catch(() => {
-            return caches.match(e.request);
+        caches.match(e.request, { ignoreSearch: true }).then((cached) => {
+            if (cached) return cached;
+            return fetch(e.request).then((res) => {
+                if (res && res.status === 200) {
+                    const copy = res.clone();
+                    caches.open(CACHE_NAME).then((cache) => cache.put(e.request, copy)).catch(() => {});
+                }
+                return res;
+            }).catch(() => caches.match(e.request));
         })
     );
 });
