@@ -2,7 +2,7 @@
    يخزّن الواجهة على الجهاز لتفتح فوراً وبلا إنترنت.
    ⚠️ عند أي تعديل على index.html غيّر رقم النسخة هنا. */
 
-var VERSION = "ghars-v3.0.0";
+var VERSION = "ghars-v3.1.0";
 var SHELL = [
   "./",
   "./index.html",
