@@ -11,7 +11,7 @@
   var FATAL = {
     NOT_FOUND: 1, BAD_STATUS: 1, DUPLICATE: 1, RESERVED: 1, BAD_NAME: 1,
     REQUIRED: 1, BAD_DATE: 1, TOO_LONG: 1, BAD_CHARS: 1,
-    UNKNOWN_ACTION: 1, NO_SHEET: 1, NO_SS: 1, TOO_MANY: 1
+    UNKNOWN_ACTION: 1, NO_SHEET: 1, NO_SS: 1, TOO_MANY: 1, STALE_BINDING: 1
   };
 
   var storageFailed = false;
@@ -48,6 +48,7 @@
   function baseState() {
     return {
       teacherId: "", teacherName: "", className: "", students: [], marks: {},
+      classSheetId: "",
       date: "", submitted: false, dirty: false, pendingAttendanceId: "",
       syncedAttendanceId: "", lastSyncedAt: 0
     };
@@ -59,6 +60,7 @@
     out.teacherId = String(entry.teacherId || typedId || "").trim();
     out.teacherName = String(entry.teacherName || "").trim();
     out.className = String(entry.className || "").trim();
+    out.classSheetId = String(entry.classSheetId || "").trim();
     out.students = Array.isArray(entry.students) ? entry.students.slice() : [];
     out.marks = entry.marks && typeof entry.marks === "object" ? entry.marks : {};
     out.date = entry.date || today();
@@ -198,6 +200,8 @@
     var queue = Q();
     op.opId = op.opId || uid();
     op.teacherId = op.teacherId || S.teacherId;
+    op.className = op.className || S.className;
+    op.classSheetId = op.classSheetId || S.classSheetId;
     op.createdAt = op.createdAt || Date.now();
     if (options && options.replaceKey) {
       op.replaceKey = options.replaceKey;
@@ -208,7 +212,8 @@
     queue.push(op);
     setQ(queue);
     requestBackgroundSync();
-    scheduleSync(120);
+    // توزيع أقل من نصف ثانية يمنع 30 جهازًا من ضرب Apps Script في اللحظة نفسها.
+    scheduleSync(120 + Math.floor(Math.random() * 480));
     return op;
   }
 
@@ -327,6 +332,7 @@
     if (op.action === "add_student" && result.duplicate) toast("الطالب موجود أصلًا في الشيت", "good");
     if (result.teacherName && dirKey(S.teacherId) === dirKey(op.teacherId)) S.teacherName = result.teacherName;
     if (result.className && dirKey(S.teacherId) === dirKey(op.teacherId)) S.className = result.className;
+    if (result.classSheetId && dirKey(S.teacherId) === dirKey(op.teacherId)) S.classSheetId = String(result.classSheetId);
     persist();
   }
 
@@ -448,6 +454,7 @@
           teacherId: result.teacherId,
           teacherName: result.teacherName,
           className: result.className,
+          classSheetId: result.classSheetId,
           students: result.students || [],
           date: result.date,
           marks: fillDefaults(result.students || [], result.attendance || {}),
@@ -477,7 +484,7 @@
     rollDay();
     repairPendingState();
     paintAll();
-    if (Q().length) scheduleSync(250);
+    if (Q().length) scheduleSync(250 + Math.floor(Math.random() * 500));
     if (storageFailed) toast("التخزين المحلي غير متاح على هذا الجهاز", "bad");
   }
 
@@ -615,6 +622,7 @@
         var localDirty = S.dirty;
         S.teacherName = result.teacherName;
         S.className = result.className;
+        S.classSheetId = String(result.classSheetId || S.classSheetId || "");
         S.students = result.students || [];
         S.date = result.date;
         S.marks = fillDefaults(S.students, result.attendance || {});
@@ -691,8 +699,19 @@
     toast("تمت إضافة " + name, "good");
   });
 
+  $("i-add").addEventListener("keydown", function (event) {
+    if (event.key !== "Enter") return;
+    event.preventDefault();
+    $("do-add").click();
+  });
+
   var rowIdx = -1;
-  function openRowMenu(index) { rowIdx = index; $("row-h").textContent = S.students[index]; open("v-row"); }
+  function openRowMenu(index) {
+    if (!Number.isInteger(index) || index < 0 || index >= S.students.length) return;
+    rowIdx = index;
+    $("row-h").textContent = S.students[index];
+    open("v-row");
+  }
 
   $("row-ren").addEventListener("click", function () {
     shut("v-row");
@@ -717,6 +736,12 @@
     toast("تم تعديل الاسم", "good");
   });
 
+  $("i-ren").addEventListener("keydown", function (event) {
+    if (event.key !== "Enter") return;
+    event.preventDefault();
+    $("do-ren").click();
+  });
+
   $("row-del").addEventListener("click", function () {
     var name = S.students[rowIdx];
     shut("v-row");
@@ -731,13 +756,26 @@
 
   $("btn-menu").addEventListener("click", function () { open("v-menu"); });
   $("m-pull").addEventListener("click", function () { shut("v-menu"); pull(true); });
-  $("m-out").addEventListener("click", function () {
-    var count = Q().length;
+  function signOut() {
+    var teacherKey = dirKey(S.teacherId);
+    var count = Q().filter(function (op) { return dirKey(op.teacherId) === teacherKey; }).length;
     var message = count ? "لديك " + count + " عملية محفوظة لم تُرسل بعد. ستبقى محفوظة بعد الخروج.\nمتابعة؟" : "تسجيل الخروج؟";
     if (!confirm(message)) return;
+
+    clearTimeout(timer);
+    shut("v-menu");
+    S = baseState();
     try { localStorage.removeItem(K_STATE); } catch (_) {}
-    location.reload();
-  });
+
+    var openVeils = document.querySelectorAll(".veil.open");
+    for (var i = 0; i < openVeils.length; i++) openVeils[i].classList.remove("open");
+    $("app").classList.remove("on");
+    $("gate").hidden = false;
+    $("code").value = "";
+    $("gate-note").hidden = true;
+    setTimeout(function () { $("code").focus(); }, 50);
+  }
+  $("m-out").addEventListener("click", signOut);
 
   $("btn-sum").addEventListener("click", function () {
     var counts = countMarks();
@@ -776,7 +814,10 @@
   window.addEventListener("online", function () {
     backoff = 0;
     paintWire();
-    if (Q().length) { toast("عاد الاتصال — جارٍ إرسال البيانات", "good"); scheduleSync(150); }
+    if (Q().length) {
+      toast("عاد الاتصال — جارٍ إرسال البيانات", "good");
+      scheduleSync(150 + Math.floor(Math.random() * 1200));
+    }
     else if (S.teacherId && !S.dirty) silentRefresh();
   });
   window.addEventListener("offline", function () { paintWire(); });
