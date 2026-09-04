@@ -2,12 +2,13 @@
    يخزّن الواجهة على الجهاز لتفتح فوراً وبلا إنترنت.
    ⚠️ عند أي تعديل على index.html غيّر رقم النسخة هنا. */
 
-var VERSION = "ghars-v4.0.0";
+var VERSION = "ghars-v5.0.0";
 var SHELL = [
   "./",
   "./index.html",
   "./manifest.json",
-  "./styles.css?v=4.0.0",
+  "./styles.css?v=5.0.0",
+  "./app.js?v=5.0.0",
   "./logo.png"
 ];
 
@@ -71,6 +72,16 @@ self.addEventListener("fetch", function (e) {
         return res;
       }).catch(function () { return hit; });
       return hit || net;
+    })
+  );
+});
+
+// إذا سمح المتصفح بالمزامنة الخلفية، نوقظ الصفحة المفتوحة لتفرغ طابورها.
+self.addEventListener("sync", function (e) {
+  if (e.tag !== "ghars-sync") return;
+  e.waitUntil(
+    self.clients.matchAll({ type: "window", includeUncontrolled: true }).then(function (clients) {
+      clients.forEach(function (client) { client.postMessage({ type: "GHARS_SYNC_NOW" }); });
     })
   );
 });

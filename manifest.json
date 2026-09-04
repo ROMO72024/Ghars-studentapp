@@ -4,6 +4,7 @@
   "description": "تسجيل حضور وغياب الطلاب، يعمل بدون إنترنت ويزامن تلقائياً.",
   "lang": "ar",
   "dir": "rtl",
+  "id": "./",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",

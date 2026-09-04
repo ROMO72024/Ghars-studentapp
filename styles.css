@@ -28,6 +28,15 @@ body {
   line-height: 1.55;
 }
 
+button,
+.row {
+  touch-action: manipulation;
+}
+
+button:disabled {
+  cursor: default;
+}
+
 .serif {
   font-family: Tahoma, Arial, "Segoe UI", sans-serif;
 }
@@ -297,6 +306,12 @@ main {
 .submit.done {
   color: var(--leaf);
   background: var(--leaf-wash);
+  box-shadow: none;
+}
+
+.submit.pending {
+  color: #7a5200;
+  background: var(--amber-wash);
   box-shadow: none;
 }
 
