@@ -745,13 +745,13 @@
   $("row-del").addEventListener("click", function () {
     var name = S.students[rowIdx];
     shut("v-row");
-    if (!confirm("حذف «" + name + "» من قائمة الصف؟\nستبقى سجلات حضوره السابقة محفوظة.")) return;
+    if (!confirm("حذف «" + name + "» من قائمة الصف ومن تسجيل اليوم؟\nستبقى سجلات الأيام السابقة محفوظة.")) return;
     var wasSubmitted = S.submitted && !S.dirty;
     S.students.splice(rowIdx, 1);
     delete S.marks[name];
-    enqueue({ action: "delete_student", studentName: name });
+    enqueue({ action: "delete_student", studentName: name, date: S.date });
     rosterChanged(wasSubmitted);
-    toast("حُذف " + name + " من القائمة");
+    toast("حُذف " + name + " من القائمة وتسجيل اليوم");
   });
 
   $("btn-menu").addEventListener("click", function () { open("v-menu"); });
