@@ -1,357 +1,202 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#06392D">
-<meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<link rel="manifest" href="manifest.json">
-<link rel="apple-touch-icon" href="logo.png">
-<title>الحضور والغياب — غرس</title>
-
-<style>
-/* ══════════════════════════════════════════════════════════
-   مدرسة وروضة غرس الحديثة — سجل الحضور
-   فكرة التصميم: سجل ورقي رسمي — حافة مخرَّمة كصفحة مقطوعة من
-   دفتر، وأزرار الحالة كأختام حبر. خطوط النظام فقط، لا شبكة،
-   حدود بدل الظلال المكدَّسة لأداء أخف على الهواتف الضعيفة.
-   ══════════════════════════════════════════════════════════ */
-:root{
-  --paper:#FBF3E7; --card:#FFFDF9; --edge:#E7D9C4;
-  --ink:#2B1B12; --mute:#8A7360;
-  --wine:#7C1B4E; --wine-deep:#4A0F30; --wine-soft:#F4E3EE;
-  --leaf:#4F7A2E; --leaf-wash:#EAF1DC;
-  --clay:#AE3326; --clay-wash:#FBEAE4;
-  --amber:#A6720A; --amber-wash:#FBF0DA;
-  --r:13px;
-}
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
-html{font-size:16px}
-body{
-  font-family:"Segoe UI",Tahoma,"Noto Sans Arabic",Arial,sans-serif;
-  background:var(--paper); color:var(--ink);
-  min-height:100vh;min-height:100dvh; overflow-x:hidden; line-height:1.45;
-  -webkit-text-size-adjust:100%;
-}
-.serif{font-family:"Noto Naskh Arabic","Traditional Arabic",Amiri,"Segoe UI",serif}
-button,input{font:inherit;color:inherit}
-button{background:none;border:0;cursor:pointer}
-[hidden]{display:none!important}
-:focus-visible{outline:2px solid var(--wine);outline-offset:2px}
-
-/* توقيع التصميم: حافة مخرَّمة كصفحة مقطوعة من دفتر — تُستخدم مرتين فقط */
-.torn{position:relative}
-.torn::after{
-  content:"";position:absolute;left:0;right:0;bottom:-7px;height:14px;
-  background-image:radial-gradient(circle 7px, var(--paper) 7px, transparent 7.4px);
-  background-size:24px 14px; background-position:0 -7px; background-repeat:repeat-x;
-}
-.torn.on-card::after{ background-image:radial-gradient(circle 7px, var(--card) 7px, transparent 7.4px); }
-
-/* ── تسجيل الدخول ─────────────────────────────────── */
-#gate{
-  min-height:100vh;min-height:100dvh;display:flex;align-items:center;justify-content:center;
-  padding:26px 18px;background:
-    radial-gradient(120% 90% at 15% 0%, rgba(255,255,255,.07), transparent 55%),
-    radial-gradient(120% 90% at 100% 100%, rgba(0,0,0,.18), transparent 55%),
-    var(--wine-deep);
-}
-.gate-card{ background:var(--card);border-radius:18px;padding:36px 26px 30px;
-  width:100%;max-width:372px;text-align:center; }
-.seal{
-  width:64px;height:64px;margin:0 auto 18px;border-radius:16px;
-  background:var(--wine);color:#fff;display:flex;align-items:center;justify-content:center;
-  font-size:1.4rem;font-weight:700;letter-spacing:-1px;
-  box-shadow:inset 0 0 0 3px rgba(255,255,255,.22), inset 0 0 0 5px rgba(255,255,255,.1);
-}
-.gate-card h1{font-size:1.14rem;font-weight:700;color:var(--wine-deep)}
-.gate-card .serif{font-size:1.18rem}
-.gate-card p{font-size:.86rem;color:var(--mute);margin-top:5px;margin-bottom:28px}
-.gate-card label{display:block;text-align:right;font-size:.86rem;font-weight:600;margin-bottom:8px}
-#code{
-  width:100%;padding:15px;border:1.5px solid var(--edge);border-radius:10px;
-  font-size:1.25rem;text-align:center;direction:ltr;letter-spacing:3px;
-  background:#FAF4EA;transition:border-color .15s;
-}
-#code:focus{outline:none;border-color:var(--wine);background:#fff}
-.btn-main{
-  width:100%;margin-top:16px;padding:15px;border-radius:10px;
-  background:var(--wine);color:#fff;font-size:1rem;font-weight:700;
-}
-.btn-main:active{background:var(--wine-deep)}
-.btn-main:disabled{opacity:.5}
-.note{
-  margin-top:14px;padding:11px 13px;border-radius:9px;font-size:.85rem;
-  font-weight:600;text-align:right;
-}
-.note.err{background:var(--clay-wash);color:var(--clay)}
-.note.hint{background:var(--wine-soft);color:var(--wine-deep)}
-
-/* ── الرأس ───────────────────────────────────────── */
-#app{display:none;flex-direction:column;min-height:100vh;min-height:100dvh}
-#app.on{display:flex}
-.top{
-  background:var(--wine-deep);color:#fff;padding:12px 14px 19px;
-  display:flex;align-items:center;gap:11px;
-  position:sticky;top:0;z-index:40;
-  padding-top:12px;padding-top:max(12px,env(safe-area-inset-top));
-}
-.top .seal{width:37px;height:37px;border-radius:10px;margin:0;font-size:.92rem;
-  background:rgba(255,255,255,.15);box-shadow:inset 0 0 0 2px rgba(255,255,255,.2)}
-.who{flex:1;min-width:0}
-.who b{display:block;font-size:.95rem;font-weight:700;line-height:1.25;
-  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.who span{display:block;font-size:.76rem;color:rgba(255,255,255,.72);
-  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.ico{
-  width:38px;height:38px;border-radius:10px;background:rgba(255,255,255,.13);
-  display:flex;align-items:center;justify-content:center;color:#fff;flex:0 0 auto;position:relative;
-}
-.ico:active{background:rgba(255,255,255,.28)}
-.ico svg{width:19px;height:19px;fill:none;stroke:currentColor;stroke-width:2;
-  stroke-linecap:round;stroke-linejoin:round}
-.ico[data-n]:not([data-n="0"])::before{
-  content:attr(data-n);position:absolute;top:-5px;left:-5px;
-  min-width:19px;height:19px;padding:0 5px;border-radius:10px;
-  background:#E7A73D;color:#3A2400;font-size:.68rem;font-weight:800;
-  display:flex;align-items:center;justify-content:center;
-}
-.spinning{animation:spin 1s linear infinite}
-@keyframes spin{to{transform:rotate(360deg)}}
-
-/* ── شريط الحالة ─────────────────────────────────── */
-.wire{ display:flex;align-items:center;gap:8px;padding:7px 15px;font-size:.8rem;font-weight:600; }
-.wire i{width:7px;height:7px;border-radius:50%;flex:0 0 auto;background:currentColor}
-.wire.ok  {background:var(--leaf-wash); color:var(--leaf)}
-.wire.work{background:#EDF2FB;         color:#1B4DA8}
-.wire.wait{background:var(--amber-wash);color:var(--amber)}
-.wire.bad {background:var(--clay-wash); color:var(--clay)}
-
-/* ── لوحة اليوم — كصفحة سجل ──────────────────────── */
-main{flex:1;padding:22px 12px 132px;max-width:640px;width:100%;margin-inline:auto}
-.day{
-  background:var(--card);border:1px solid var(--edge);border-radius:var(--r);
-  padding:16px 16px 14px;margin-bottom:16px;
-}
-.day-h{display:flex;align-items:flex-end;justify-content:space-between;gap:10px}
-.day-h .lbl{font-size:.78rem;color:var(--mute);font-weight:600}
-.day-h b{display:block;font-size:1.32rem;font-weight:700;color:var(--wine-deep);margin-top:2px}
-.day-h .cnt{font-size:.78rem;color:var(--mute);white-space:nowrap}
-.tally{display:flex;gap:7px;margin-top:13px}
-.tally div{flex:1;text-align:center;border-radius:9px;padding:9px 4px;line-height:1.2}
-.tally b{display:block;font-size:1.3rem;font-weight:800}
-.tally span{font-size:.72rem;font-weight:600}
-.t-p{background:var(--leaf-wash);color:var(--leaf)}
-.t-a{background:var(--clay-wash);color:var(--clay)}
-.t-e{background:var(--amber-wash);color:var(--amber)}
-
-/* ── قائمة الطلاب ────────────────────────────────── */
-#roster{display:flex;flex-direction:column;gap:8px}
-.row{
-  background:var(--card);border:1px solid var(--edge);border-radius:var(--r);
-  padding:11px 12px 12px;contain:content;
-}
-.row.absent {border-color:#E8BEB8}
-.row.excused{border-color:#E6CE9C}
-.row-h{display:flex;align-items:center;gap:10px;margin-bottom:10px}
-.av{
-  width:30px;height:30px;border-radius:9px;font-size:.78rem;font-weight:700;
-  display:flex;align-items:center;justify-content:center;flex:0 0 auto;
-}
-.row-h .nm{
-  flex:1;min-width:0;font-size:.94rem;font-weight:600;
-  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
-}
-.more{width:30px;height:30px;border-radius:8px;color:var(--mute);
-  display:flex;align-items:center;justify-content:center;flex:0 0 auto;font-size:1.15rem;line-height:1}
-.more:active{background:var(--wine-soft)}
-
-/* أزرار الحالة — أختام حبر */
-.stamps{display:flex;gap:7px}
-.stamps button{
-  flex:1;padding:9px 2px;border-radius:9px;font-size:.85rem;font-weight:700;
-  border:1.5px solid var(--edge); background:var(--card); color:var(--mute);
-  transition:transform .1s;
-}
-.stamps button:active{transform:scale(.94)}
-.stamps .p.on{background:var(--leaf); color:#fff; border-color:var(--leaf); transform:rotate(-1.5deg)}
-.stamps .a.on{background:var(--clay); color:#fff; border-color:var(--clay); transform:rotate(1.5deg)}
-.stamps .e.on{background:var(--amber);color:#fff; border-color:var(--amber);transform:rotate(-1.5deg)}
-
-.blank{text-align:center;padding:46px 20px;color:var(--mute);font-size:.9rem}
-.blank b{display:block;font-size:1rem;color:var(--ink);margin-bottom:6px}
-
-/* ── الشريط السفلي ───────────────────────────────── */
-.dock{
-  position:fixed;bottom:0;left:0;right:0;z-index:45;
-  background:var(--card);border-top:1px solid var(--edge);
-  padding:10px 12px calc(10px + env(safe-area-inset-bottom));
-  display:flex;gap:8px;max-width:640px;margin-inline:auto;
-}
-.dock .side{ padding:12px 14px;border-radius:10px;background:var(--wine-soft);
-  color:var(--wine-deep);font-size:.87rem;font-weight:700;flex:0 0 auto; }
-.dock .side:active{background:#EAD3E1}
-.submit{ flex:1;padding:13px;border-radius:10px;background:var(--wine);color:#fff;
-  font-size:.97rem;font-weight:700; }
-.submit:active{background:var(--wine-deep)}
-.submit.done{background:var(--leaf-wash);color:var(--leaf)}
-
-/* ── النوافذ ─────────────────────────────────────── */
-.veil{ position:fixed;inset:0;z-index:200;background:rgba(43,27,18,.5);
-  display:flex;align-items:flex-end;justify-content:center;
-  opacity:0;visibility:hidden;transition:opacity .18s,visibility .18s; }
-.veil.open{opacity:1;visibility:visible}
-.sheet{ background:var(--card);width:100%;max-width:480px;
-  border-radius:18px 18px 0 0;padding:20px 18px calc(24px + env(safe-area-inset-bottom));
-  max-height:88vh;max-height:88dvh;overflow-y:auto;transform:translateY(14px);transition:transform .18s; }
-.veil.open .sheet{transform:none}
-.grip{width:38px;height:4px;border-radius:2px;background:var(--edge);margin:0 auto 16px}
-.sheet h2{font-size:1rem;font-weight:700;color:var(--wine-deep);margin-bottom:14px}
-.sheet label{display:block;font-size:.85rem;font-weight:600;margin-bottom:7px}
-.sheet input{ width:100%;padding:13px 14px;border:1.5px solid var(--edge);border-radius:10px;
-  font-size:.95rem;background:#FAF4EA;margin-bottom:14px; }
-.sheet input:focus{outline:none;border-color:var(--wine);background:#fff}
-.pair{display:flex;gap:9px;margin-top:4px}
-.pair button{flex:1;padding:13px;border-radius:10px;font-size:.93rem;font-weight:700}
-.go{background:var(--wine);color:#fff}
-.go:disabled{opacity:.5}
-.no{background:var(--wine-soft);color:var(--wine-deep)}
-.warn{ background:var(--amber-wash);color:var(--amber);border-radius:9px;
-  padding:10px 12px;font-size:.83rem;font-weight:600;margin-bottom:14px; }
-.menu button{ display:flex;align-items:center;gap:11px;width:100%;padding:14px 12px;
-  border-radius:10px;font-size:.93rem;font-weight:600;text-align:right; }
-.menu button:active{background:var(--wine-soft)}
-.menu .danger{color:var(--clay)}
-.menu hr{border:0;border-top:1px solid var(--edge);margin:6px 0}
-
-.absentees{margin-top:6px}
-.absentees h3{font-size:.86rem;font-weight:700;margin:14px 0 8px}
-.absentees div{ display:flex;align-items:center;justify-content:space-between;gap:10px;
-  padding:9px 12px;border-radius:9px;background:var(--paper);margin-bottom:5px;font-size:.88rem; }
-.absentees em{font-style:normal;font-size:.75rem;font-weight:700;padding:2px 9px;border-radius:8px}
-.e-a{background:var(--clay-wash);color:var(--clay)}
-.e-e{background:var(--amber-wash);color:var(--amber)}
-.allgood{text-align:center;padding:16px;color:var(--leaf);font-weight:700}
-
-/* ── التنبيهات ───────────────────────────────────── */
-#toasts{ position:fixed;top:12px;left:12px;right:12px;z-index:400;
-  display:flex;flex-direction:column;align-items:center;gap:7px;pointer-events:none; }
-.toast{ padding:11px 18px;border-radius:10px;font-size:.87rem;font-weight:600;
-  color:#fff;background:var(--ink);max-width:380px;text-align:center; }
-.toast.good{background:var(--leaf)}
-.toast.bad {background:var(--clay)}
-
-@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
-</style>
-<link rel="stylesheet" href="styles.css?v=5.2.0">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#073E31">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="description" content="سجل الحضور والغياب — مدرسة وروضة غرس الحديثة">
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="logo.png">
+  <link rel="stylesheet" href="styles.css?v=5.3.0">
+  <title>الحضور والغياب — غرس</title>
 </head>
 
 <body>
-
-<!-- ═══════════ تسجيل الدخول ═══════════ -->
-<section id="gate">
-  <div class="gate-card torn on-card">
-    <div class="seal brand-logo"><img src="logo.png" alt="شعار غرس"></div>
-    <h1 class="serif">مدرسة وروضة غرس الحديثة</h1>
-    <p>سجل الحضور والغياب</p>
-    <label for="code">رقم المعلمة</label>
-    <input id="code" type="text" inputmode="text" autocomplete="off"
-           enterkeyhint="go" placeholder="مثال: A1000">
-    <button class="btn-main" id="enter">دخول</button>
-    <div class="note" id="gate-note" hidden></div>
-  </div>
-</section>
-
-<!-- ═══════════ التطبيق ═══════════ -->
-<div id="app">
-  <header class="top torn">
-    <div class="seal top-logo"><img src="logo.png" alt="شعار غرس"></div>
-    <div class="who">
-      <b id="t-name"></b>
-      <span id="t-class"></span>
-    </div>
-    <button class="ico" id="btn-sync" data-n="0" aria-label="مزامنة">
-      <svg viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-2.6-6.4"/><path d="M21 3v6h-6"/></svg>
-    </button>
-    <button class="ico" id="btn-menu" aria-label="خيارات">
-      <svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
-    </button>
-  </header>
-
-  <div class="wire ok" id="wire" role="status" aria-live="polite"><i></i><span id="wire-txt">محفوظ</span></div>
-
-  <main>
-    <div class="day">
-      <div class="day-h">
-        <div>
-          <div class="lbl" id="d-day">اليوم</div>
-          <b id="d-date" class="serif"></b>
+  <!-- تسجيل الدخول -->
+  <section id="gate">
+    <div class="gate-card">
+      <div class="gate-brand">
+        <div class="brand-mark">
+          <img src="logo.png" alt="شعار غرس">
         </div>
-        <span class="cnt" id="d-count"></span>
+        <div class="brand-copy">
+          <span class="brand-chip">غرس الحديثة</span>
+          <h1>سجل الحضور<br>والغياب</h1>
+          <p>مدرسة وروضة غرس الحديثة</p>
+        </div>
       </div>
-      <div class="tally">
-        <div class="t-p"><b id="c-p">0</b><span>حاضر</span></div>
-        <div class="t-a"><b id="c-a">0</b><span>غائب</span></div>
-        <div class="t-e"><b id="c-e">0</b><span>مأذون</span></div>
+
+      <div class="gate-form">
+        <div class="form-kicker"><i></i><span>دخول المعلمة</span></div>
+        <label for="code">رمز الدخول</label>
+        <input
+          id="code"
+          type="text"
+          inputmode="text"
+          autocomplete="off"
+          enterkeyhint="go"
+          placeholder="مثال: A1000">
+        <button class="btn-main" id="enter">دخول إلى السجل</button>
+        <div class="offline-note">
+          <i></i>
+          <span>بعد الدخول الأول يمكنك استخدام السجل دون إنترنت</span>
+        </div>
+        <div class="note" id="gate-note" hidden></div>
       </div>
     </div>
-    <div id="roster"></div>
-  </main>
+  </section>
 
-  <div class="dock">
-    <button class="side" id="btn-add">إضافة طالب</button>
-    <button class="side" id="btn-sum">الملخص</button>
-    <button class="submit" id="btn-submit">تسليم الحضور</button>
+  <!-- التطبيق -->
+  <div id="app">
+    <header class="top">
+      <div class="top-brand">
+        <div class="top-logo"><img src="logo.png" alt="شعار غرس"></div>
+        <div class="who">
+          <b id="t-name"></b>
+          <span id="t-class"></span>
+        </div>
+      </div>
+
+      <div class="top-actions">
+        <button class="ico" id="btn-sync" data-n="0" aria-label="مزامنة البيانات">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M21 12a9 9 0 1 1-2.6-6.4"></path>
+            <path d="M21 3v6h-6"></path>
+          </svg>
+        </button>
+        <button class="ico" id="btn-menu" aria-label="فتح الخيارات">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M5 7h14M5 12h14M5 17h14"></path>
+          </svg>
+        </button>
+      </div>
+    </header>
+
+    <div class="wire ok" id="wire" role="status" aria-live="polite">
+      <i></i><span id="wire-txt">محفوظ</span>
+    </div>
+
+    <main>
+      <section class="day" aria-label="ملخص حضور اليوم">
+        <div class="day-copy">
+          <span class="day-kicker">سجل اليوم</span>
+          <div class="day-line">
+            <div>
+              <span class="day-name" id="d-day">اليوم</span>
+              <b id="d-date"></b>
+            </div>
+            <span class="student-count" id="d-count"></span>
+          </div>
+        </div>
+
+        <div class="tally" aria-label="أعداد حالات الحضور">
+          <div class="t-p"><i></i><b id="c-p">0</b><span>حاضر</span></div>
+          <div class="t-a"><i></i><b id="c-a">0</b><span>غائب</span></div>
+          <div class="t-e"><i></i><b id="c-e">0</b><span>مأذون</span></div>
+        </div>
+      </section>
+
+      <section class="roster-panel" aria-labelledby="roster-title">
+        <div class="roster-head">
+          <div>
+            <span>قائمة الصف</span>
+            <h2 id="roster-title">الطلاب</h2>
+          </div>
+          <div class="legend" aria-hidden="true">
+            <span class="lg-p"><i></i>حاضر</span>
+            <span class="lg-a"><i></i>غائب</span>
+            <span class="lg-e"><i></i>مأذون</span>
+          </div>
+        </div>
+        <div id="roster"></div>
+      </section>
+    </main>
+
+    <nav class="dock" aria-label="إجراءات الحضور">
+      <button class="side add-action" id="btn-add">إضافة طالب</button>
+      <button class="side sum-action" id="btn-sum">الملخص</button>
+      <button class="submit" id="btn-submit">تسليم الحضور</button>
+    </nav>
   </div>
-</div>
 
-<div id="toasts" aria-live="polite"></div>
+  <div id="toasts" aria-live="polite"></div>
 
-<!-- ═══════════ النوافذ ═══════════ -->
-<div class="veil" id="v-add"><div class="sheet">
-  <div class="grip"></div><h2>إضافة طالب</h2>
-  <label for="i-add">اسم الطالب</label>
-  <input id="i-add" type="text" autocomplete="off" placeholder="الاسم الكامل">
-  <div class="pair"><button class="go" id="do-add">إضافة</button><button class="no" data-close>إلغاء</button></div>
-</div></div>
-
-<div class="veil" id="v-ren"><div class="sheet">
-  <div class="grip"></div><h2>تعديل اسم الطالب</h2>
-  <div class="warn">سيُحدَّث الاسم في كل سجلات الحضور السابقة.</div>
-  <label for="i-ren">الاسم الجديد</label>
-  <input id="i-ren" type="text" autocomplete="off">
-  <div class="pair"><button class="go" id="do-ren">حفظ</button><button class="no" data-close>إلغاء</button></div>
-</div></div>
-
-<div class="veil" id="v-row"><div class="sheet menu">
-  <div class="grip"></div><h2 id="row-h"></h2>
-  <button id="row-ren">تعديل الاسم</button>
-  <button class="danger" id="row-del">حذف من القائمة</button>
-  <hr>
-  <button data-close>إلغاء</button>
-</div></div>
-
-<div class="veil" id="v-menu"><div class="sheet menu">
-  <div class="grip"></div><h2>خيارات</h2>
-  <button id="m-pull">تحديث البيانات من الشيت</button>
-  <hr>
-  <button class="danger" id="m-out">تسجيل الخروج</button>
-  <button data-close>إغلاق</button>
-</div></div>
-
-<div class="veil" id="v-sum"><div class="sheet">
-  <div class="grip"></div><h2>ملخص اليوم</h2>
-  <div class="tally">
-    <div class="t-p"><b id="s-p">0</b><span>حاضر</span></div>
-    <div class="t-a"><b id="s-a">0</b><span>غائب</span></div>
-    <div class="t-e"><b id="s-e">0</b><span>مأذون</span></div>
+  <!-- إضافة طالب -->
+  <div class="veil" id="v-add">
+    <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="add-title">
+      <div class="grip"></div>
+      <span class="sheet-kicker">قائمة الصف</span>
+      <h2 id="add-title">إضافة طالب</h2>
+      <label for="i-add">اسم الطالب</label>
+      <input id="i-add" type="text" autocomplete="off" placeholder="الاسم الكامل">
+      <div class="pair">
+        <button class="go" id="do-add">إضافة</button>
+        <button class="no" data-close>إلغاء</button>
+      </div>
+    </div>
   </div>
-  <div class="absentees" id="s-list"></div>
-  <div class="pair"><button class="no" data-close>إغلاق</button></div>
-</div></div>
 
-<script src="app.js?v=5.1.2"></script>
+  <!-- تعديل الاسم -->
+  <div class="veil" id="v-ren">
+    <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="rename-title">
+      <div class="grip"></div>
+      <span class="sheet-kicker">بيانات الطالب</span>
+      <h2 id="rename-title">تعديل اسم الطالب</h2>
+      <div class="warn">سيُحدَّث الاسم في كل سجلات الحضور السابقة.</div>
+      <label for="i-ren">الاسم الجديد</label>
+      <input id="i-ren" type="text" autocomplete="off">
+      <div class="pair">
+        <button class="go" id="do-ren">حفظ</button>
+        <button class="no" data-close>إلغاء</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- خيارات الطالب -->
+  <div class="veil" id="v-row">
+    <div class="sheet menu" role="dialog" aria-modal="true" aria-labelledby="row-h">
+      <div class="grip"></div>
+      <span class="sheet-kicker">خيارات الطالب</span>
+      <h2 id="row-h"></h2>
+      <button id="row-ren">تعديل الاسم</button>
+      <button class="danger" id="row-del">حذف من القائمة</button>
+      <hr>
+      <button data-close>إلغاء</button>
+    </div>
+  </div>
+
+  <!-- خيارات التطبيق -->
+  <div class="veil" id="v-menu">
+    <div class="sheet menu" role="dialog" aria-modal="true" aria-labelledby="menu-title">
+      <div class="grip"></div>
+      <span class="sheet-kicker">إدارة السجل</span>
+      <h2 id="menu-title">خيارات</h2>
+      <button id="m-pull">تحديث البيانات من الشيت</button>
+      <hr>
+      <button class="danger" id="m-out">تسجيل الخروج</button>
+      <button data-close>إغلاق</button>
+    </div>
+  </div>
+
+  <!-- ملخص اليوم -->
+  <div class="veil" id="v-sum">
+    <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="summary-title">
+      <div class="grip"></div>
+      <span class="sheet-kicker">نظرة سريعة</span>
+      <h2 id="summary-title">ملخص اليوم</h2>
+      <div class="tally summary-tally">
+        <div class="t-p"><i></i><b id="s-p">0</b><span>حاضر</span></div>
+        <div class="t-a"><i></i><b id="s-a">0</b><span>غائب</span></div>
+        <div class="t-e"><i></i><b id="s-e">0</b><span>مأذون</span></div>
+      </div>
+      <div class="absentees" id="s-list"></div>
+      <div class="pair"><button class="no" data-close>إغلاق</button></div>
+    </div>
+  </div>
+
+  <script src="app.js?v=5.1.2"></script>
 </body>
 </html>
